@@ -13,6 +13,7 @@ func Migrate() {
 		&Adeeb{},
 		&Poem{},
 		&ChosenVerse{},
+		&ProseQoute{},
 	)
 }
 
@@ -48,6 +49,7 @@ type Adeeb struct {
 
 	Poems        []Poem        `gorm:"foreignKey:AdeebID;references:ID"`
 	ChosenVerses []ChosenVerse `gorm:"foreignKey:AdeebID;references:ID"`
+	ProseQoutes  []ProseQoute  `gorm:"foreignKey:AdeebID;references:ID"`
 }
 
 type Poem struct {
@@ -75,4 +77,16 @@ type ChosenVerse struct {
 
 	PoemID uuid.UUID
 	Poem   Poem `gorm:"foreignKey:PoemID;references:ID"`
+}
+
+type ProseQoute struct {
+	BaseModel
+	Tags     []string `gorm:"type:varchar(256)[];default:'{}'"`
+	Qoute    string   `gorm:"size:512;not null"`
+	Source   *string  `gorm:"size:128"`
+	Reviewed bool     `gorm:"default:false"`
+
+	// Relations
+	AdeebID uuid.UUID
+	Adeeb   Adeeb `gorm:"foreignKey:AdeebID;references:ID"`
 }
