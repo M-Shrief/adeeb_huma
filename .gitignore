@@ -1,0 +1,9 @@
+coverage
+
+.env
+
+*.log
+
+# Certificates
+*.pem
+*.crt
