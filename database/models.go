@@ -11,6 +11,7 @@ func Migrate() {
 	Conn.AutoMigrate(
 		&User{},
 		&Adeeb{},
+		&Poem{},
 	)
 }
 
@@ -39,4 +40,22 @@ type Adeeb struct {
 	TimePeriod TimePeriodEnum `gorm:"type:time_period_enum; not null"`
 	Bio        *string        `gorm:"size:1024"`
 	Reviewed   bool           `gorm:"default:false"`
+
+	// Relations
+	// We explicitly define foreignKey & references,
+	// and we don't rely on convention only
+
+	Poems []Poem `gorm:"foreignKey:AdeebID;references:ID"`
+}
+
+type Poem struct {
+	BaseModel
+	Intro     string   `gorm:"size:256;not null;unique"`
+	Verses    []string `gorm:"type:varchar(256)[]"`
+	IsCouplet bool     `gorm:"default:true"`
+	Reviewed  bool     `gorm:"default:false"`
+
+	// Relations
+	AdeebID uuid.UUID
+	Adeeb   Adeeb `gorm:"foreignKey:AdeebID;references:ID"`
 }
