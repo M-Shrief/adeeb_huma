@@ -21,9 +21,14 @@ func NewDatabase() (*gorm.DB, error) {
 		config.DB_HOST, config.DB_USER, config.DB_PASSWORD, config.DB_NAME, config.DB_PORT,
 	)
 
+	var logger_mode = logger.Warn
+	if config.APP_ENV == "dev" {
+		logger_mode = logger.Info
+	}
+
 	// Configure GORM options
 	gormConfig := &gorm.Config{
-		Logger:                 logger.Default.LogMode(logger.Info),
+		Logger:                 logger.Default.LogMode(logger_mode),
 		SkipDefaultTransaction: true, // Improves performance
 		PrepareStmt:            true, // Caches prepared statements
 	}
