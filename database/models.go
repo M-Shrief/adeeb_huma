@@ -9,7 +9,7 @@ import (
 
 func Migrate() {
 	Conn.AutoMigrate(
-		&UserModel{},
+		&User{},
 	)
 }
 
@@ -25,9 +25,9 @@ func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-type UserModel struct {
+type User struct {
 	BaseModel
 	Username  string      `gorm:"size:256;not null;unique"`
 	Passsword string      `gorm:"size:256;not null"`
-	Roles     *[]RoleEnum `gorm:"type:public.role_enum"`
+	Roles     *[]RoleEnum `gorm:"type:role_enum"`
 }
