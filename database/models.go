@@ -12,6 +12,7 @@ func Migrate() {
 		&User{},
 		&Adeeb{},
 		&Poem{},
+		&ChosenVerse{},
 	)
 }
 
@@ -45,7 +46,8 @@ type Adeeb struct {
 	// We explicitly define foreignKey & references,
 	// and we don't rely on convention only
 
-	Poems []Poem `gorm:"foreignKey:AdeebID;references:ID"`
+	Poems        []Poem        `gorm:"foreignKey:AdeebID;references:ID"`
+	ChosenVerses []ChosenVerse `gorm:"foreignKey:AdeebID;references:ID"`
 }
 
 type Poem struct {
@@ -58,4 +60,19 @@ type Poem struct {
 	// Relations
 	AdeebID uuid.UUID
 	Adeeb   Adeeb `gorm:"foreignKey:AdeebID;references:ID"`
+}
+
+type ChosenVerse struct {
+	BaseModel
+	Tags      []string `gorm:"type:varchar(256)[];default:'{}'"`
+	Verses    []string `gorm:"type:varchar(256)[]"`
+	IsCouplet bool     `gorm:"default:true"`
+	Reviewed  bool     `gorm:"default:false"`
+
+	// Relations
+	AdeebID uuid.UUID
+	Adeeb   Adeeb `gorm:"foreignKey:AdeebID;references:ID"`
+
+	PoemID uuid.UUID
+	Poem   Poem `gorm:"foreignKey:PoemID;references:ID"`
 }
