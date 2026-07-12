@@ -10,6 +10,7 @@ import (
 func Migrate() {
 	Conn.AutoMigrate(
 		&User{},
+		&Adeeb{},
 	)
 }
 
@@ -30,4 +31,12 @@ type User struct {
 	Username  string      `gorm:"size:256;not null;unique"`
 	Passsword string      `gorm:"size:256;not null"`
 	Roles     *[]RoleEnum `gorm:"type:role_enum"`
+}
+
+type Adeeb struct {
+	BaseModel
+	Name       string         `gorm:"size:256;not null;unique"`
+	TimePeriod TimePeriodEnum `gorm:"type:time_period_enum; not null"`
+	Bio        *string        `gorm:"size:1024"`
+	Reviewed   bool           `gorm:"default:false"`
 }
