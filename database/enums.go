@@ -27,6 +27,10 @@ func CreateEnumsIfNotExists() {
 			return err
 		}
 
+		if err := tx.Exec(OutfitTypeEnum_CreateSQLIfNotExists).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -171,6 +175,56 @@ func (s *StatusEnum) Scan(value interface{}) error {
 		*s = StatusEnum(v)
 	default:
 		return errors.New("invalid type for StatusEnum")
+	}
+	return nil
+}
+
+type OutfitTypeEnum string
+
+const (
+	OutfitTypeEnum_Tshirt7    OutfitTypeEnum = "تيشيرت - لياقة 7"
+	OutfitTypeEnum_TshirtHalf OutfitTypeEnum = "تيشيرت - نص لياقة "
+	OutfitTypeEnum_TshirtPolo OutfitTypeEnum = "تشيرت - لياقة بولو"
+	OutfitTypeEnum_Jacket     OutfitTypeEnum = "جاكيت"
+	OutfitTypeEnum_Sweetshirt OutfitTypeEnum = "سويت شيرت"
+	OutfitTypeEnum_Pullover   OutfitTypeEnum = "بلوفر"
+)
+
+var OutfitTypeEnum_CreateSQLIfNotExists = fmt.Sprintf(
+	`DO $$ BEGIN
+		IF NOT EXISTS (
+			SELECT 1 FROM pg_type 
+			WHERE typname = '%s' 
+			AND typnamespace = 'public'::regnamespace
+		) THEN
+			CREATE TYPE %s AS ENUM ('%s', '%s', '%s', '%s', '%s', '%s');
+		END IF;
+	END $$;
+	`,
+	`outfit_type_enum`, `outfit_type_enum`,
+	OutfitTypeEnum_Tshirt7, OutfitTypeEnum_TshirtHalf,
+	OutfitTypeEnum_TshirtPolo, OutfitTypeEnum_Sweetshirt, OutfitTypeEnum_Jacket, OutfitTypeEnum_Pullover,
+)
+
+// Implement the driver.Valuer interface to save to DB
+func (ot OutfitTypeEnum) Value() (driver.Value, error) {
+	return string(ot), nil
+}
+
+// Implement the sql.Scanner interface to read from DB
+func (ot *OutfitTypeEnum) Scan(value interface{}) error {
+	if value == nil {
+		*ot = ""
+		return nil
+	}
+	// Postgres often returns []byte, MySQL might return string
+	switch v := value.(type) {
+	case []byte:
+		*ot = OutfitTypeEnum(v)
+	case string:
+		*ot = OutfitTypeEnum(v)
+	default:
+		return errors.New("invalid type for OutfitTypeEnum")
 	}
 	return nil
 }
