@@ -14,6 +14,7 @@ func Migrate() {
 		&Poem{},
 		&ChosenVerse{},
 		&ProseQoute{},
+		&Order{},
 	)
 }
 
@@ -89,4 +90,19 @@ type ProseQoute struct {
 	// Relations
 	AdeebID uuid.UUID
 	Adeeb   Adeeb `gorm:"foreignKey:AdeebID;references:ID"`
+}
+
+type Order struct {
+	BaseModel
+	Name             string     `gorm:"size:256;not null"`
+	Phone            string     `gorm:"size:128;not null"`
+	address          string     `gorm:"size:256;not null"`
+	Reviewed         bool       `gorm:"default:false;not null"`
+	IsUpdateable     bool       `gorm:"default:true;not null"`
+	Status           StatusEnum `gorm:"type:status_enum; not null"`
+	DeliverySchedule *time.Time `gorm:"type:timestamp without time zone;not null"`
+
+	// Relations
+	UserID uuid.UUID
+	User   User `gorm:"foreignKey:UserID;references:ID"`
 }
