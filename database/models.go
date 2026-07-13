@@ -15,6 +15,7 @@ func Migrate() {
 		&ChosenVerse{},
 		&ProseQoute{},
 		&Order{},
+		&Print{},
 	)
 }
 
@@ -35,6 +36,9 @@ type User struct {
 	Username  string      `gorm:"size:256;not null;unique"`
 	Passsword string      `gorm:"size:256;not null"`
 	Roles     *[]RoleEnum `gorm:"type:role_enum"`
+
+	// Relations
+	Orders []Order `gorm:"foreignKey:UserID;references:ID"`
 }
 
 type Adeeb struct {
@@ -105,4 +109,30 @@ type Order struct {
 	// Relations
 	UserID uuid.UUID
 	User   User `gorm:"foreignKey:UserID;references:ID"`
+
+	Prints []Print `gorm:"foreignKey:OrderID;references:ID"`
+}
+
+type Print struct {
+	BaseModel
+	FontType    string         `gorm:"size:64;not null"`
+	FontColor   string         `gorm:"size:64;not null"`
+	OutfitColor string         `gorm:"size:64;not null"`
+	OutfitType  OutfitTypeEnum `gorm:"type:outfit_type_enum; not null"`
+
+	Qoute     *string   `gorm:"size:512"`
+	Verses    *[]string `gorm:"type:varchar(256)[]"`
+	IsCouplet *bool     `gorm:"default:true"`
+
+	// Relations
+	OrderID uuid.UUID
+	Order   Order `gorm:"foreignKey:OrderID;references:ID"`
+
+	UserID uuid.UUID
+	User   User `gorm:"foreignKey:UserID;references:ID"`
+
+	// // Only for Analytics
+	PoemID        *uuid.UUID
+	ChosenVerseID *uuid.UUID
+	ProseQouteID  *uuid.UUID
 }
