@@ -23,6 +23,10 @@ func CreateEnumsIfNotExists() {
 			return err
 		}
 
+		if err := tx.Exec(StatusEnum_CreateSQLIfNotExists).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -122,6 +126,51 @@ func (tp *TimePeriodEnum) Scan(value interface{}) error {
 		*tp = TimePeriodEnum(v)
 	default:
 		return errors.New("invalid type for TimePeriodEnum")
+	}
+	return nil
+}
+
+type StatusEnum string
+
+const (
+	StatusEnum_InProgress StatusEnum = "in progress"
+	StatusEnum_Aborted    StatusEnum = "aborted"
+	StatusEnum_Completed  StatusEnum = "completed"
+)
+
+var StatusEnum_CreateSQLIfNotExists = fmt.Sprintf(
+	`DO $$ BEGIN
+		IF NOT EXISTS (
+			SELECT 1 FROM pg_type 
+			WHERE typname = '%s' 
+			AND typnamespace = 'public'::regnamespace
+		) THEN
+			CREATE TYPE %s AS ENUM ('%s', '%s', '%s');
+		END IF;
+	END $$;
+	`,
+	`status_enum`, `status_enum`, StatusEnum_InProgress, StatusEnum_Aborted, StatusEnum_Completed,
+)
+
+// Implement the driver.Valuer interface to save to DB
+func (s StatusEnum) Value() (driver.Value, error) {
+	return string(s), nil
+}
+
+// Implement the sql.Scanner interface to read from DB
+func (s *StatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		*s = ""
+		return nil
+	}
+	// Postgres often returns []byte, MySQL might return string
+	switch v := value.(type) {
+	case []byte:
+		*s = StatusEnum(v)
+	case string:
+		*s = StatusEnum(v)
+	default:
+		return errors.New("invalid type for StatusEnum")
 	}
 	return nil
 }
