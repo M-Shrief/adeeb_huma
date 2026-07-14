@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 func Migrate() {
@@ -20,15 +19,9 @@ func Migrate() {
 }
 
 type BaseModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;" json:"id"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamp without time zone" json:"-"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamp without time zone" json:"-"`
-}
-
-// BeforeCreate hook generates UUID before insertion
-func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
-	b.ID = uuid.New()
-	return
 }
 
 type User struct {

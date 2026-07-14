@@ -31,6 +31,7 @@ func NewDatabase() (*gorm.DB, error) {
 		Logger:                 logger.Default.LogMode(logger_mode),
 		SkipDefaultTransaction: true, // Improves performance
 		PrepareStmt:            true, // Caches prepared statements
+		QueryFields:            true,
 	}
 
 	// Open the connection
