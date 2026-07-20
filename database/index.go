@@ -32,6 +32,7 @@ func NewDatabase() (*gorm.DB, error) {
 		SkipDefaultTransaction: true, // Improves performance
 		PrepareStmt:            true, // Caches prepared statements
 		QueryFields:            true,
+		TranslateError:         true,
 	}
 
 	// Open the connection
