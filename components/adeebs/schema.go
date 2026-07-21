@@ -69,6 +69,10 @@ type UpdateAdeeb_Req_Body struct {
 	schemas.ReviewedField_Optional
 }
 
+type DeleteAdeeb_Req struct {
+	schemas.IDPath
+}
+
 func DBModel_To_ResModel(adeeb_model database.Adeeb) OneAdeeb_Res {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.

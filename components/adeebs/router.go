@@ -205,3 +205,30 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 
 	return res, nil
 }
+
+func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.Delete_Res, error) {
+
+	_, err := gorm.G[database.Adeeb](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "name"},
+				{Name: "bio"},
+				{Name: "time_period"},
+				{Name: "reviewed"},
+			},
+		}).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
+	}
+
+	res := &schemas.Delete_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
