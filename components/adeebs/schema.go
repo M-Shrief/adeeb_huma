@@ -5,6 +5,15 @@ import (
 	"adeeb_huma/schemas"
 )
 
+type GetOneAdeeb_Req struct {
+	schemas.IDPath
+}
+
+type GetOneAdeeb_Res struct {
+	Body   OneAdeeb_Res
+	Status int
+}
+
 type CreateOneAdeeb_Req struct {
 	Body CreateOneAdeeb_Req_Body
 }

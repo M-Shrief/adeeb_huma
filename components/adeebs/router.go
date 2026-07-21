@@ -46,6 +46,39 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 	return res, nil
 }
 
+func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAdeeb_Res, error) {
+
+	adeeb_model, err := gorm.G[database.Adeeb](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "name"},
+				{Name: "bio"},
+				{Name: "time_period"},
+				{Name: "reviewed"},
+			},
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("Adeeb's not found")
+		} else {
+			return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
+		}
+	}
+
+	adeeb_res := DBModel_To_ResModel(adeeb_model)
+	res := &GetOneAdeeb_Res{
+		Body:   adeeb_res,
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*CreateOneAdeeb_Res, error) {
 	data := database.Adeeb{
 		Name:       input.Body.Name,
