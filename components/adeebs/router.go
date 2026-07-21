@@ -165,10 +165,6 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 		clause.Select{
 			Columns: []clause.Column{
 				{Name: "id"},
-				{Name: "name"},
-				{Name: "bio"},
-				{Name: "time_period"},
-				{Name: "reviewed"},
 			},
 		}).
 		Where("id = ?", input.ID).
@@ -208,17 +204,7 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 
 func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.Delete_Res, error) {
 
-	_, err := gorm.G[database.Adeeb](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "name"},
-				{Name: "bio"},
-				{Name: "time_period"},
-				{Name: "reviewed"},
-			},
-		}).
+	_, err := gorm.G[database.Adeeb](database.Conn).
 		Where("id = ?", input.ID).
 		Delete(ctx)
 
