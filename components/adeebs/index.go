@@ -21,4 +21,17 @@ func RegisterAPI(api huma.API) {
 		CreateOneAdeeb_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/adeebs/many",
+			Summary:       "Create Many",
+			Description:   "Create Many Adeebs",
+			Tags:          []string{"Adeebs"},
+			DefaultStatus: http.StatusCreated,
+		},
+		CreateManyAdeeb_Handler,
+	)
+
 }

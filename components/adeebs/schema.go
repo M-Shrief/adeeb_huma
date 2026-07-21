@@ -20,6 +20,26 @@ type CreateOneAdeeb_Res struct {
 	Status int
 }
 
+type CreateManyAdeeb_Req struct {
+	Body []CreateOneAdeeb_Req_Body
+}
+
+type CreateManyAdeeb_Res struct {
+	Body   CreateManyAdeeb_Res_Body
+	Status int
+}
+
+type InvalidItem struct {
+	ItemIndex int    `json:"item_index"`
+	Message   string `json:"message"`
+}
+
+type CreateManyAdeeb_Res_Body struct {
+	CreatedItems []OneAdeeb_Res `json:"created_items"`
+	SuccessCount int            `json:"success_count"`
+	InvalidItems []InvalidItem  `json:"invalid_items"`
+}
+
 type OneAdeeb_Res struct {
 	schemas.IDField
 	schemas.Adeeb_NameField

@@ -45,3 +45,47 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 	return &CreateOneAdeeb_Res{Body: adeeb, Status: http.StatusCreated}, nil
 
 }
+
+func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*CreateManyAdeeb_Res, error) {
+
+	var CreatedItems []OneAdeeb_Res
+	var InvalidItems []InvalidItem
+
+	new_data := ReqModels_To_DBModels(input.Body)
+	for i, item := range new_data {
+		err := gorm.G[database.Adeeb](
+			database.Conn,
+			clause.Returning{
+				Columns: []clause.Column{
+					{Name: "id"},
+					{Name: "name"},
+					{Name: "bio"},
+					{Name: "time_period"},
+					{Name: "reviewed"},
+				},
+			},
+		).Create(ctx, &item)
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				InvalidItems = append(InvalidItems, InvalidItem{ItemIndex: i, Message: "Already exists"})
+			} else {
+				InvalidItems = append(InvalidItems, InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
+			}
+			continue
+		}
+
+		new_adeeb := DBModel_To_ResModel(item)
+		CreatedItems = append(CreatedItems, new_adeeb)
+
+	}
+
+	return &CreateManyAdeeb_Res{
+		Body: CreateManyAdeeb_Res_Body{
+			CreatedItems: CreatedItems,
+			SuccessCount: len(CreatedItems),
+			InvalidItems: InvalidItems,
+		},
+		Status: http.StatusCreated}, nil
+
+}
