@@ -24,3 +24,11 @@ type GetAll_Res_Body[T any] struct {
 	Limit  int `json:"limit"`
 	Offset int `json:"offset"`
 }
+
+type Update_Res struct {
+	Status int
+}
+
+type Delete_Res struct {
+	Status int
+}
