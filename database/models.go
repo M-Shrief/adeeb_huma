@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 func Migrate() {
@@ -52,10 +53,10 @@ type Adeeb struct {
 
 type Poem struct {
 	BaseModel
-	Intro     string   `gorm:"size:256;not null;unique" json:"intro"`
-	Verses    []string `gorm:"type:varchar(256)[]" json:"verses"`
-	IsCouplet bool     `gorm:"default:true" json:"is_couplet"`
-	Reviewed  bool     `gorm:"default:false" json:"reviewed"`
+	Intro     string         `gorm:"size:256;not null;unique" json:"intro"`
+	Verses    pq.StringArray `gorm:"type:varchar(256)[]" json:"verses"`
+	IsCouplet bool           `gorm:"default:true" json:"is_couplet"`
+	Reviewed  bool           `gorm:"default:false" json:"reviewed"`
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
@@ -64,10 +65,10 @@ type Poem struct {
 
 type ChosenVerse struct {
 	BaseModel
-	Tags      []string `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
-	Verses    []string `gorm:"type:varchar(256)[]" json:"verses"`
-	IsCouplet bool     `gorm:"default:true" json:"is_couplet"`
-	Reviewed  bool     `gorm:"default:false" json:"reviewed"`
+	Tags      pq.StringArray `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
+	Verses    pq.StringArray `gorm:"type:varchar(256)[]" json:"verses"`
+	IsCouplet bool           `gorm:"default:true" json:"is_couplet"`
+	Reviewed  bool           `gorm:"default:false" json:"reviewed"`
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
@@ -79,10 +80,10 @@ type ChosenVerse struct {
 
 type ProseQoute struct {
 	BaseModel
-	Tags     []string `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
-	Qoute    string   `gorm:"size:512;not null" json:"qoute"`
-	Source   *string  `gorm:"size:128" json:"source"`
-	Reviewed bool     `gorm:"default:false" json:"reviewed"`
+	Tags     pq.StringArray `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
+	Qoute    string         `gorm:"size:512;not null" json:"qoute"`
+	Source   *string        `gorm:"size:128" json:"source"`
+	Reviewed bool           `gorm:"default:false" json:"reviewed"`
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
@@ -113,9 +114,9 @@ type Print struct {
 	OutfitColor string         `gorm:"size:64;not null" json:"outfit_color"`
 	OutfitType  OutfitTypeEnum `gorm:"type:outfit_type_enum; not null" json:"outfit_type"`
 
-	Qoute     *string   `gorm:"size:512" json:"qoute"`
-	Verses    *[]string `gorm:"type:varchar(256)[]" json:"verses"`
-	IsCouplet *bool     `gorm:"default:true" json:"is_couplet"`
+	Qoute     *string         `gorm:"size:512" json:"qoute"`
+	Verses    *pq.StringArray `gorm:"type:varchar(256)[]" json:"verses"`
+	IsCouplet *bool           `gorm:"default:true" json:"is_couplet"`
 
 	// Relations
 	OrderID uuid.UUID `json:"order_id"`
