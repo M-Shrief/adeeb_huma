@@ -2,6 +2,7 @@ package adeebs
 
 import (
 	"adeeb_huma/database"
+	"adeeb_huma/schemas"
 	"context"
 	"errors"
 	"net/http"
@@ -10,6 +11,40 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[OneAdeeb_Res], error) {
+
+	list, err := gorm.G[database.Adeeb](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "name"},
+				{Name: "bio"},
+				{Name: "time_period"},
+				{Name: "reviewed"},
+			},
+		}).
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Find(ctx)
+
+	if err != nil {
+		return nil, huma.Error404NotFound("Adeebs are not available")
+	}
+
+	adeebs := DBModels_To_ResModels(list)
+	res := &schemas.GetAll_Res[OneAdeeb_Res]{
+		Body: schemas.GetAll_Res_Body[OneAdeeb_Res]{
+			Data:   adeebs,
+			Limit:  input.Limit,
+			Offset: input.Offset,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
 
 func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*CreateOneAdeeb_Res, error) {
 	data := database.Adeeb{
