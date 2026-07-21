@@ -1,7 +1,8 @@
 package router
 
 import (
-	"adeeb_huma/utils"
+	"adeeb_huma/components/adeebs"
+	"adeeb_huma/schemas"
 	"context"
 	"net/http"
 
@@ -65,6 +66,7 @@ func RegisterAllRoutes() {
 		PingRouteHandler,
 	)
 
+	adeebs.RegisterAPI(API)
 }
 
 type IndexResponse_JSONBody struct {
@@ -90,6 +92,6 @@ func IndexRouteHandler(ctx context.Context, input *struct{}) (*IndexResponse, er
 	return &IndexResponse{Body: body, Status: http.StatusOK}, nil
 }
 
-func PingRouteHandler(ctx context.Context, input *struct{}) (*utils.BaseResponse, error) {
-	return &utils.BaseResponse{Body: utils.BaseResponse_JSONBody{Message: "Pong"}, Status: http.StatusOK}, nil
+func PingRouteHandler(ctx context.Context, input *struct{}) (*schemas.BaseResponse, error) {
+	return &schemas.BaseResponse{Body: schemas.BaseResponse_JSONBody{Message: "Pong"}, Status: http.StatusOK}, nil
 }
