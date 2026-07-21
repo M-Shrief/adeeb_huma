@@ -157,3 +157,51 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*
 		Status: http.StatusCreated}, nil
 
 }
+
+func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.Update_Res, error) {
+
+	adeeb_model, err := gorm.G[database.Adeeb](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "name"},
+				{Name: "bio"},
+				{Name: "time_period"},
+				{Name: "reviewed"},
+			},
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("Adeeb's not found")
+		} else {
+			return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
+		}
+	}
+
+	if input.Body.Name != nil {
+		adeeb_model.Name = *input.Body.Name
+	}
+	if input.Body.Bio != nil {
+		adeeb_model.Bio = input.Body.Bio
+	}
+
+	if input.Body.TimePeriod != nil {
+		adeeb_model.TimePeriod = *input.Body.TimePeriod
+	}
+
+	if input.Body.Reviewed != nil {
+		adeeb_model.Reviewed = *input.Body.Reviewed
+	}
+
+	database.Conn.Save(&adeeb_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
