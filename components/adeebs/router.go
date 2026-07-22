@@ -117,7 +117,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*CreateManyAdeeb_Res, error) {
 
 	var CreatedItems []OneAdeeb_Res
-	var InvalidItems []InvalidItem
+	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
 	new_data := ReqModels_To_DBModels(input.Body)
 	for i, item := range new_data {
@@ -136,9 +136,9 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				InvalidItems = append(InvalidItems, InvalidItem{ItemIndex: i, Message: "Already exists"})
+				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Already exists"})
 			} else {
-				InvalidItems = append(InvalidItems, InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
+				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
 			}
 			continue
 		}
@@ -149,7 +149,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*
 	}
 
 	return &CreateManyAdeeb_Res{
-		Body: CreateManyAdeeb_Res_Body{
+		Body: schemas.CreateMany_Res_Body[OneAdeeb_Res]{
 			CreatedItems: CreatedItems,
 			SuccessCount: len(CreatedItems),
 			InvalidItems: InvalidItems,

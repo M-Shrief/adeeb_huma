@@ -34,19 +34,8 @@ type CreateManyAdeeb_Req struct {
 }
 
 type CreateManyAdeeb_Res struct {
-	Body   CreateManyAdeeb_Res_Body
+	Body   schemas.CreateMany_Res_Body[OneAdeeb_Res]
 	Status int
-}
-
-type InvalidItem struct {
-	ItemIndex int    `json:"item_index"`
-	Message   string `json:"message"`
-}
-
-type CreateManyAdeeb_Res_Body struct {
-	CreatedItems []OneAdeeb_Res `json:"created_items"`
-	SuccessCount int            `json:"success_count"`
-	InvalidItems []InvalidItem  `json:"invalid_items"`
 }
 
 type OneAdeeb_Res struct {

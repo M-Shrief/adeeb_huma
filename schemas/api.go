@@ -25,6 +25,17 @@ type GetAll_Res_Body[T any] struct {
 	Offset int `json:"offset"`
 }
 
+type CreateMany_Res_Body[T any] struct {
+	CreatedItems []T                               `json:"created_items"`
+	SuccessCount int                               `json:"success_count"`
+	InvalidItems []CreateMany_Res_Body_InvalidItem `json:"invalid_items"`
+}
+
+type CreateMany_Res_Body_InvalidItem struct {
+	ItemIndex int    `json:"item_index"`
+	Message   string `json:"message"`
+}
+
 type Update_Res struct {
 	Status int
 }
