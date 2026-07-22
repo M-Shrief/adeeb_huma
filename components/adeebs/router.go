@@ -84,7 +84,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 		Name:       input.Body.Name,
 		TimePeriod: input.Body.TimePeriod,
 		Bio:        &input.Body.Bio,
-		Reviewed:   true,
+		Reviewed:   input.Body.Reviewed,
 	}
 
 	err := gorm.G[database.Adeeb](
@@ -114,7 +114,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 
 }
 
-func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*CreateManyAdeeb_Res, error) {
+func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (*CreateManyAdeebs_Res, error) {
 
 	var CreatedItems []OneAdeeb_Res
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
@@ -148,7 +148,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeeb_Req) (*
 
 	}
 
-	return &CreateManyAdeeb_Res{
+	return &CreateManyAdeebs_Res{
 		Body: schemas.CreateMany_Res_Body[OneAdeeb_Res]{
 			CreatedItems: CreatedItems,
 			SuccessCount: len(CreatedItems),

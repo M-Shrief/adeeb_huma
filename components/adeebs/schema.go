@@ -22,6 +22,7 @@ type CreateOneAdeeb_Req_Body struct {
 	schemas.Adeeb_NameField
 	schemas.Adeeb_TimePeriodField
 	schemas.Adeeb_BioField
+	schemas.ReviewedField
 }
 
 type CreateOneAdeeb_Res struct {
@@ -29,11 +30,11 @@ type CreateOneAdeeb_Res struct {
 	Status int
 }
 
-type CreateManyAdeeb_Req struct {
+type CreateManyAdeebs_Req struct {
 	Body []CreateOneAdeeb_Req_Body
 }
 
-type CreateManyAdeeb_Res struct {
+type CreateManyAdeebs_Res struct {
 	Body   schemas.CreateMany_Res_Body[OneAdeeb_Res]
 	Status int
 }
@@ -91,6 +92,7 @@ func ReqModel_To_DBModel(adeeb_req CreateOneAdeeb_Req_Body) database.Adeeb {
 		Name:       adeeb_req.Name,
 		Bio:        &adeeb_req.Bio,
 		TimePeriod: adeeb_req.TimePeriod,
+		Reviewed:   adeeb_req.Reviewed,
 	}
 
 	return adeeb_model
