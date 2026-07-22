@@ -24,6 +24,14 @@ type CreateOnePoem_Res struct {
 	Status int
 }
 
+type CreateManyPoems_Req struct {
+	Body []CreateOnePoem_Req_Body
+}
+
+type CreateManyPoems_Res struct {
+	Body   schemas.CreateMany_Res_Body[OnePoem_Res]
+	Status int
+}
 type OnePoem_Res struct {
 	schemas.IDField
 	schemas.Poem_IntroField
@@ -47,4 +55,39 @@ func DBModel_To_ResModel(poem_model database.Poem) OnePoem_Res {
 	poem_res.AdeebID = poem_model.AdeebID
 
 	return poem_res
+}
+
+func DBModels_To_ResModels(poem_models []database.Poem) []OnePoem_Res {
+	var poems []OnePoem_Res
+
+	for _, adeeb_model := range poem_models {
+		poem_res := DBModel_To_ResModel(adeeb_model)
+		poems = append(poems, poem_res)
+	}
+
+	return poems
+}
+
+func ReqModel_To_DBModel(poem_req CreateOnePoem_Req_Body) database.Poem {
+	poem_model := database.Poem{
+		Intro:     poem_req.Intro,
+		Verses:    poem_req.Verses,
+		IsCouplet: poem_req.Reviewed,
+		Reviewed:  poem_req.Reviewed,
+
+		AdeebID: poem_req.AdeebID,
+	}
+
+	return poem_model
+}
+
+func ReqModels_To_DBModels(poems_req []CreateOnePoem_Req_Body) []database.Poem {
+	var poem_models []database.Poem
+
+	for _, poem_req := range poems_req {
+		poem_model := ReqModel_To_DBModel(poem_req)
+		poem_models = append(poem_models, poem_model)
+	}
+
+	return poem_models
 }

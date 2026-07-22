@@ -21,4 +21,17 @@ func RegisterAPI(api huma.API) {
 		CreateOnePoem_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/poems/many",
+			Summary:       "Create Many",
+			Description:   "Create Many Poems",
+			Tags:          []string{"Poems"},
+			DefaultStatus: http.StatusCreated,
+		},
+		CreateManyPoems_Handler,
+	)
+
 }
