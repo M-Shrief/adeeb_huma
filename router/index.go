@@ -2,6 +2,7 @@ package router
 
 import (
 	"adeeb_huma/components/adeebs"
+	"adeeb_huma/components/poems"
 	"adeeb_huma/schemas"
 	"context"
 	"net/http"
@@ -67,6 +68,7 @@ func RegisterAllRoutes() {
 	)
 
 	adeebs.RegisterAPI(API)
+	poems.RegisterAPI(API)
 }
 
 type IndexResponse_JSONBody struct {
