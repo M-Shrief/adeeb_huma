@@ -12,6 +12,42 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[OnePoem_Res], error) {
+
+	list, err := gorm.G[database.Poem](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "intro"},
+				{Name: "verses"},
+				{Name: "is_couplet"},
+				{Name: "reviewed"},
+
+				{Name: "adeeb_id"},
+			},
+		}).
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Find(ctx)
+
+	if err != nil {
+		return nil, huma.Error404NotFound("Poems are not available")
+	}
+
+	poems := DBModels_To_ResModels(list)
+	res := &schemas.GetAll_Res[OnePoem_Res]{
+		Body: schemas.GetAll_Res_Body[OnePoem_Res]{
+			Data:   poems,
+			Limit:  input.Limit,
+			Offset: input.Offset,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*CreateOnePoem_Res, error) {
 	data := database.Poem{
 		Intro:     input.Body.Intro,
@@ -30,6 +66,7 @@ func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*Crea
 				{Name: "verses"},
 				{Name: "is_couplet"},
 				{Name: "reviewed"},
+
 				{Name: "adeeb_id"},
 			},
 		},
