@@ -13,6 +13,44 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.ChosenVerse_Descriptive], error) {
+
+	list, err := gorm.G[database.ChosenVerse](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "verses"},
+				{Name: "is_couplet"},
+				{Name: "tags"},
+				{Name: "reviewed"},
+
+				{Name: "adeeb_id"},
+				{Name: "poem_id"},
+			},
+		}).
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Find(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /chosen_verses.")
+		return nil, huma.Error404NotFound("Unknown error while getting chosen_verses")
+	}
+
+	chosen_verses := DBModels_To_ResModels(list)
+	res := &schemas.GetAll_Res[schemas.ChosenVerse_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.ChosenVerse_Descriptive]{
+			Data:   chosen_verses,
+			Limit:  input.Limit,
+			Offset: input.Offset,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVerse_Req) (*CreateOneChosenVerse_Res, error) {
 	data := database.ChosenVerse{
 		Verses:    input.Body.Verses,
