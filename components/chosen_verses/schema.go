@@ -5,6 +5,20 @@ import (
 	"adeeb_huma/schemas"
 )
 
+type GetOneChosenVerse_Req struct {
+	schemas.IDPath
+}
+
+type GetOneChosenVerse_Res struct {
+	Body   GetOneChosenVerse_Res_Body
+	Status int
+}
+type GetOneChosenVerse_Res_Body struct {
+	schemas.ChosenVerse_Descriptive
+	Adeeb schemas.Adeeb_Minimal `json:"adeeb"`
+	Poem  schemas.Poem_Minimal  `json:"poem"`
+}
+
 type CreateOneChosenVerse_Req struct {
 	Body CreateOneChosenVerse_Req_Body
 }

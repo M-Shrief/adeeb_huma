@@ -24,6 +24,19 @@ func RegisterAPI(api huma.API) {
 	huma.Register(
 		api,
 		huma.Operation{
+			Method:        http.MethodGet,
+			Path:          "/api/v1/chosen_verses/{id}",
+			Summary:       "Get One",
+			Description:   "Get One ChosenVersess",
+			Tags:          []string{"ChosenVerses"},
+			DefaultStatus: http.StatusOK,
+		},
+		GetOneChosenVerse_Handler,
+	)
+
+	huma.Register(
+		api,
+		huma.Operation{
 			Method:        http.MethodPost,
 			Path:          "/api/v1/chosen_verses",
 			Summary:       "Create One",
@@ -46,5 +59,4 @@ func RegisterAPI(api huma.API) {
 		},
 		CreateManyChosenVerses_Handler,
 	)
-
 }

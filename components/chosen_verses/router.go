@@ -51,6 +51,64 @@ func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) 
 	return res, nil
 }
 
+func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req) (*GetOneChosenVerse_Res, error) {
+
+	chosen_verse_model, err := gorm.G[database.ChosenVerse](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "verses"},
+				{Name: "is_couplet"},
+				{Name: "tags"},
+				{Name: "reviewed"},
+
+				{Name: "adeeb_id"},
+				{Name: "poem_id"},
+			},
+		}).
+		Preload("Adeeb", func(db gorm.PreloadBuilder) error {
+			db.Select("id", "name")
+			return nil
+		}).
+		Preload("Poem", func(db gorm.PreloadBuilder) error {
+			db.Select("id", "intro")
+			return nil
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("ChosenVerse's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /chosen_verses/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request getting ChosenVerse")
+	}
+
+	var chosen_verse_res GetOneChosenVerse_Res_Body
+	chosen_verse_res.ID = chosen_verse_model.ID
+	chosen_verse_res.Verses = chosen_verse_model.Verses
+	chosen_verse_res.IsCouplet = chosen_verse_model.IsCouplet
+	chosen_verse_res.Tags = chosen_verse_model.Tags
+	chosen_verse_res.Reviewed = chosen_verse_model.Reviewed
+
+	chosen_verse_res.AdeebID = chosen_verse_model.AdeebID
+	chosen_verse_res.Adeeb.ID = chosen_verse_model.Adeeb.ID
+	chosen_verse_res.Adeeb.Name = chosen_verse_model.Adeeb.Name
+
+	chosen_verse_res.PoemID = chosen_verse_model.PoemID
+	chosen_verse_res.Poem.ID = chosen_verse_model.Poem.ID
+	chosen_verse_res.Poem.Intro = chosen_verse_model.Poem.Intro
+
+	res := &GetOneChosenVerse_Res{
+		Body:   chosen_verse_res,
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVerse_Req) (*CreateOneChosenVerse_Res, error) {
 	data := database.ChosenVerse{
 		Verses:    input.Body.Verses,
