@@ -1,6 +1,6 @@
 package schemas
 
-type ChosenVerses_Full struct {
+type ChosenVerse_Full struct {
 	IDField
 	VersesField
 	IsCoupletField
@@ -13,7 +13,7 @@ type ChosenVerses_Full struct {
 	PoemIDField
 }
 
-type ChosenVerses_Descriptive struct {
+type ChosenVerse_Descriptive struct {
 	IDField
 	VersesField
 	IsCoupletField
@@ -24,6 +24,6 @@ type ChosenVerses_Descriptive struct {
 	PoemIDField
 }
 
-type ChosenVerses_Minimal struct {
+type ChosenVerse_Minimal struct {
 	IDField
 }
