@@ -61,6 +61,10 @@ type UodatePoem_Req_Body struct {
 	schemas.AdeebIDField_Optional
 }
 
+type DeletePoem_Req struct {
+	schemas.IDPath
+}
+
 func DBModel_To_ResModel(poem_model database.Poem) schemas.Poem_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.

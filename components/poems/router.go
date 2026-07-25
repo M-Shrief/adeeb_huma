@@ -213,3 +213,20 @@ func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Up
 
 	return res, nil
 }
+
+func DeletePoemHandler(ctx context.Context, input *DeletePoem_Req) (*schemas.Delete_Res, error) {
+
+	_, err := gorm.G[database.Poem](database.Conn).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		return nil, huma.Error400BadRequest("Bad Request Deleting Poem")
+	}
+
+	res := &schemas.Delete_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}

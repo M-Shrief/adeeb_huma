@@ -73,4 +73,17 @@ func RegisterAPI(api huma.API) {
 		UpdatePoem_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodDelete,
+			Path:          "/api/v1/poems/{id}",
+			Summary:       "Delete One",
+			Description:   "Delete One Poem",
+			Tags:          []string{"Poems"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		DeletePoemHandler,
+	)
+
 }
