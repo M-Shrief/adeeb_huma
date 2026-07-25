@@ -12,7 +12,7 @@ func RegisterAPI(api huma.API) {
 		api,
 		huma.Operation{
 			Method:        http.MethodGet,
-			Path:          "/api/v1/poemss",
+			Path:          "/api/v1/poems",
 			Summary:       "Get All",
 			Description:   "Get All Poemss",
 			Tags:          []string{"Poems"},

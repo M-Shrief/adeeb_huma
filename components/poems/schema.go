@@ -20,7 +20,7 @@ type CreateOnePoem_Req_Body struct {
 }
 
 type CreateOnePoem_Res struct {
-	Body   OnePoem_Res
+	Body   schemas.Poem_Descriptive
 	Status int
 }
 
@@ -29,23 +29,14 @@ type CreateManyPoems_Req struct {
 }
 
 type CreateManyPoems_Res struct {
-	Body   schemas.CreateMany_Res_Body[OnePoem_Res]
+	Body   schemas.CreateMany_Res_Body[schemas.Poem_Descriptive]
 	Status int
 }
-type OnePoem_Res struct {
-	schemas.IDField
-	schemas.Poem_IntroField
-	schemas.VersesField
-	schemas.IsCoupletField
-	schemas.ReviewedField
-	// Relation
-	schemas.AdeebIDField
-}
 
-func DBModel_To_ResModel(poem_model database.Poem) OnePoem_Res {
+func DBModel_To_ResModel(poem_model database.Poem) schemas.Poem_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
-	var poem_res OnePoem_Res
+	var poem_res schemas.Poem_Descriptive
 	poem_res.ID = poem_model.ID
 	poem_res.Intro = poem_model.Intro
 	poem_res.Verses = poem_model.Verses
@@ -57,8 +48,8 @@ func DBModel_To_ResModel(poem_model database.Poem) OnePoem_Res {
 	return poem_res
 }
 
-func DBModels_To_ResModels(poem_models []database.Poem) []OnePoem_Res {
-	var poems []OnePoem_Res
+func DBModels_To_ResModels(poem_models []database.Poem) []schemas.Poem_Descriptive {
+	var poems []schemas.Poem_Descriptive
 
 	for _, adeeb_model := range poem_models {
 		poem_res := DBModel_To_ResModel(adeeb_model)

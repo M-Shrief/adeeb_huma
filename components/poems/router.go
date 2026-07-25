@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[OnePoem_Res], error) {
+func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.Poem_Descriptive], error) {
 
 	list, err := gorm.G[database.Poem](
 		database.Conn,
@@ -36,8 +36,8 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 	}
 
 	poems := DBModels_To_ResModels(list)
-	res := &schemas.GetAll_Res[OnePoem_Res]{
-		Body: schemas.GetAll_Res_Body[OnePoem_Res]{
+	res := &schemas.GetAll_Res[schemas.Poem_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.Poem_Descriptive]{
 			Data:   poems,
 			Limit:  input.Limit,
 			Offset: input.Offset,
@@ -85,7 +85,7 @@ func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*Crea
 
 func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*CreateManyPoems_Res, error) {
 
-	var CreatedItems []OnePoem_Res
+	var CreatedItems []schemas.Poem_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
 	new_data := ReqModels_To_DBModels(input.Body)
@@ -120,7 +120,7 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 	}
 
 	return &CreateManyPoems_Res{
-		Body: schemas.CreateMany_Res_Body[OnePoem_Res]{
+		Body: schemas.CreateMany_Res_Body[schemas.Poem_Descriptive]{
 			CreatedItems: CreatedItems,
 			SuccessCount: len(CreatedItems),
 			InvalidItems: InvalidItems,
