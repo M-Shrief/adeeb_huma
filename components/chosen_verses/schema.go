@@ -64,6 +64,10 @@ type UpdateChosenVerse_Req_Body struct {
 	schemas.PoemIDField_Optional
 }
 
+type DeleteChosenVerse_Req struct {
+	schemas.IDPath
+}
+
 func DBModel_To_ResModel(chosen_verse_model database.ChosenVerse) schemas.ChosenVerse_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.

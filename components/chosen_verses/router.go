@@ -235,3 +235,21 @@ func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req
 
 	return res, nil
 }
+
+func DeleteChosenVerseHandler(ctx context.Context, input *DeleteChosenVerse_Req) (*schemas.Delete_Res, error) {
+
+	_, err := gorm.G[database.ChosenVerse](database.Conn).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in DELETE /chosen_verses/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request Deleting ChosenVerse")
+	}
+
+	res := &schemas.Delete_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
