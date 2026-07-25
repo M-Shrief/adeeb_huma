@@ -202,7 +202,7 @@ func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.
 		Delete(ctx)
 
 	if err != nil {
-		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
+		return nil, huma.Error400BadRequest("Bad Request Deleting Adeeb")
 	}
 
 	res := &schemas.Delete_Res{
