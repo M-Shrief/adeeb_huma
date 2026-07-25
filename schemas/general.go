@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -35,6 +37,13 @@ type ReviewedField struct {
 
 type ReviewedField_Optional struct {
 	Reviewed *bool `json:"reviewed" doc:"is it reviewed?" required:"false"`
+}
+
+type CreatedAtField struct {
+	CreatedAt time.Time `json:"created_at"`
+}
+type UpdatedAtField struct {
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Relations' Fields

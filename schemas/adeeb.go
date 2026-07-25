@@ -2,6 +2,28 @@ package schemas
 
 import "adeeb_huma/database"
 
+type Adeeb_Full struct {
+	IDField
+	Adeeb_NameField
+	Adeeb_BioField
+	Adeeb_TimePeriodField
+	ReviewedField
+	CreatedAtField
+	UpdatedAtField
+}
+
+type Adeeb_Descriptive struct {
+	IDField
+	Adeeb_NameField
+	Adeeb_BioField
+	Adeeb_TimePeriodField
+	ReviewedField
+}
+
+type Adeeb_Minimal struct {
+	IDField
+	Adeeb_NameField
+}
 type Adeeb_NameField struct {
 	Name string `json:"name" doc:"Adeeb's name" minLength:"4" maxLength:"256"`
 }
