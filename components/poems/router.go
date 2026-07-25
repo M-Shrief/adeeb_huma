@@ -48,6 +48,53 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 	return res, nil
 }
 
+func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem_Res, error) {
+
+	poem_model, err := gorm.G[database.Poem](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "intro"},
+				{Name: "verses"},
+				{Name: "is_couplet"},
+				{Name: "reviewed"},
+				{Name: "adeeb_id"},
+			},
+		}).
+		Preload("Adeeb", func(db gorm.PreloadBuilder) error {
+			db.Select("id", "name")
+			return nil
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Poem's not found")
+	}
+	if err != nil {
+		return nil, huma.Error400BadRequest("Bad Request getting Poem")
+	}
+
+	var poem_res GetOnePoem_Res_Body
+	poem_res.ID = poem_model.ID
+	poem_res.Intro = poem_model.Intro
+	poem_res.Verses = poem_model.Verses
+	poem_res.IsCouplet = poem_model.IsCouplet
+	poem_res.Reviewed = poem_model.Reviewed
+
+	poem_res.AdeebID = poem_model.AdeebID
+	poem_res.Adeeb.ID = poem_model.Adeeb.ID
+	poem_res.Adeeb.Name = poem_model.Adeeb.Name
+
+	res := &GetOnePoem_Res{
+		Body:   poem_res,
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*CreateOnePoem_Res, error) {
 	data := database.Poem{
 		Intro:     input.Body.Intro,
