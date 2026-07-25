@@ -2,6 +2,7 @@ package adeebs
 
 import (
 	"adeeb_huma/database"
+	"adeeb_huma/logger"
 	"adeeb_huma/schemas"
 	"context"
 	"errors"
@@ -30,7 +31,8 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 		Find(ctx)
 
 	if err != nil {
-		return nil, huma.Error404NotFound("Adeebs are not available")
+		logger.Error().Err(err).Msg("Unknown errror in GET /adeebs")
+		return nil, huma.Error400BadRequest("Uknown error getting adeebs")
 	}
 
 	adeebs := DBModels_To_ResModels(list)
@@ -62,12 +64,12 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 		Where("id = ?", input.ID).
 		First(ctx)
 
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Adeeb's not found")
+	}
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, huma.Error404NotFound("Adeeb's not found")
-		} else {
-			return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
-		}
+		logger.Error().Err(err).Msg("Unknown errror in GET /adeebs/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
 	}
 
 	adeeb_res := DBModel_To_ResModel(adeeb_model)
@@ -106,6 +108,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 	}
 
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in POST /adeebs.")
 		return nil, huma.Error400BadRequest("Bad Request creating Adeeb.")
 	}
 
@@ -138,6 +141,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Already exists"})
 			} else {
+				logger.Error().Err(err).Msg("Unknown errror in POST /adeebs/many.")
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
 			}
 			continue
@@ -168,6 +172,7 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 		return nil, huma.Error404NotFound("Adeeb's not found")
 	}
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /adeebs/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request updating Adeeb")
 	}
 
@@ -202,6 +207,7 @@ func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.
 		Delete(ctx)
 
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in DELETE /adeebs/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request Deleting Adeeb")
 	}
 

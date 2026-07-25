@@ -2,6 +2,7 @@ package poems
 
 import (
 	"adeeb_huma/database"
+	"adeeb_huma/logger"
 	"adeeb_huma/schemas"
 	"context"
 	"errors"
@@ -32,7 +33,8 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 		Find(ctx)
 
 	if err != nil {
-		return nil, huma.Error404NotFound("Poems are not available")
+		logger.Error().Err(err).Msg("Unknown errror in GET /poems.")
+		return nil, huma.Error404NotFound("Unknown error while getting poems")
 	}
 
 	poems := DBModels_To_ResModels(list)
@@ -73,6 +75,7 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 		return nil, huma.Error404NotFound("Poem's not found")
 	}
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /poems/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request getting Poem")
 	}
 
@@ -123,6 +126,7 @@ func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*Crea
 		return nil, huma.Error409Conflict("Poem already exists")
 	}
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in POST /poems.")
 		return nil, huma.Error400BadRequest("Bad Request creating Poem.")
 	}
 
@@ -156,6 +160,7 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Already exists"})
 			} else {
+				logger.Error().Err(err).Msg("Unknown errror in POST /poems/many.")
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
 			}
 			continue
@@ -186,6 +191,7 @@ func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Up
 		return nil, huma.Error404NotFound("Poem's not found")
 	}
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /poems/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request update Poem")
 	}
 
@@ -221,6 +227,7 @@ func DeletePoemHandler(ctx context.Context, input *DeletePoem_Req) (*schemas.Del
 		Delete(ctx)
 
 	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in DELETE /poems/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request Deleting Poem")
 	}
 
