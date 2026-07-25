@@ -160,22 +160,15 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 
 func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.Update_Res, error) {
 
-	adeeb_model, err := gorm.G[database.Adeeb](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-			},
-		}).
+	adeeb_model, err := gorm.G[database.Adeeb](database.Conn).
 		Where("id = ?", input.ID).
 		First(ctx)
 
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Adeeb's not found")
+	}
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, huma.Error404NotFound("Adeeb's not found")
-		} else {
-			return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
-		}
+		return nil, huma.Error400BadRequest("Bad Request updating Adeeb")
 	}
 
 	if input.Body.Name != nil {
