@@ -65,7 +65,7 @@ type Poem struct {
 
 type ChosenVerse struct {
 	BaseModel
-	Tags      pq.StringArray `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
+	Tags      pq.StringArray `gorm:"type:varchar(64)[];default:'{}'" json:"tags"`
 	Verses    pq.StringArray `gorm:"type:varchar(256)[]" json:"verses"`
 	IsCouplet bool           `gorm:"default:true" json:"is_couplet"`
 	Reviewed  bool           `gorm:"default:false" json:"reviewed"`
@@ -80,7 +80,7 @@ type ChosenVerse struct {
 
 type ProseQoute struct {
 	BaseModel
-	Tags     pq.StringArray `gorm:"type:varchar(256)[];default:'{}'" json:"tags"`
+	Tags     pq.StringArray `gorm:"type:varchar(64)[];default:'{}'" json:"tags"`
 	Qoute    string         `gorm:"size:512;not null" json:"qoute"`
 	Source   *string        `gorm:"size:128" json:"source"`
 	Reviewed bool           `gorm:"default:false" json:"reviewed"`

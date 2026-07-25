@@ -20,7 +20,15 @@ type VersesField struct {
 }
 
 type VersesField_Optional struct {
-	Verses *pq.StringArray `json:"verses" minItems:"1" gorm:"type:varchar(256)[]" doc:"Verses" required:"false"` // nullable:"true"
+	Verses *pq.StringArray `json:"verses" minItems:"1" gorm:"type:varchar(256)[]" doc:"Verses" required:"false"`
+}
+
+type TagsField struct {
+	Tags pq.StringArray `json:"tags" gorm:"type:varchar(64)[];default:'{}'" doc:"Tags"`
+}
+
+type TagsField_Optional struct {
+	Tags *pq.StringArray `json:"tags" gorm:"type:varchar(64)[];default:'{}'" doc:"Tags" required:"false"`
 }
 
 type IsCoupletField struct {
@@ -54,4 +62,12 @@ type AdeebIDField struct {
 
 type AdeebIDField_Optional struct {
 	AdeebID *uuid.UUID `json:"adeeb_id" nullable:"true" required:"false"`
+}
+
+type PoemIDField struct {
+	PoemID uuid.UUID `json:"poem_id"`
+}
+
+type PoemIDField_Optional struct {
+	PoemID *uuid.UUID `json:"poem_id" nullable:"true" required:"false"`
 }
