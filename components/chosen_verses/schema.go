@@ -5,6 +5,26 @@ import (
 	"adeeb_huma/schemas"
 )
 
+type CreateOneChosenVerse_Req struct {
+	Body CreateOneChosenVerse_Req_Body
+}
+
+type CreateOneChosenVerse_Req_Body struct {
+	schemas.VersesField
+	schemas.IsCoupletField
+	schemas.TagsField
+	schemas.ReviewedField
+
+	// Relations
+	schemas.AdeebIDField
+	schemas.PoemIDField
+}
+
+type CreateOneChosenVerse_Res struct {
+	Body   schemas.ChosenVerse_Descriptive
+	Status int
+}
+
 func DBModel_To_ResModel(chosen_verse_model database.ChosenVerse) schemas.ChosenVerse_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
