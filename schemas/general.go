@@ -53,5 +53,5 @@ type AdeebIDField struct {
 }
 
 type AdeebIDField_Optional struct {
-	AdeebID *uuid.UUID `json:"adeeb_id" required:"false"`
+	AdeebID *uuid.UUID `json:"adeeb_id" nullable:"true" required:"false"`
 }
