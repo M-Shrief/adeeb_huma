@@ -193,3 +193,45 @@ func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosen
 		Status: http.StatusCreated}, nil
 
 }
+
+func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req) (*schemas.Update_Res, error) {
+
+	chosen_verse_model, err := gorm.G[database.ChosenVerse](database.Conn).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("ChosenVerse's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /chosen_verses/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request update ChosenVerse")
+	}
+
+	if input.Body.Verses != nil {
+		chosen_verse_model.Verses = *input.Body.Verses
+	}
+	if input.Body.IsCouplet != nil {
+		chosen_verse_model.IsCouplet = *input.Body.IsCouplet
+	}
+	if input.Body.Tags != nil {
+		chosen_verse_model.Tags = *input.Body.Tags
+	}
+	if input.Body.Reviewed != nil {
+		chosen_verse_model.Reviewed = *input.Body.Reviewed
+	}
+	if input.Body.AdeebID != nil {
+		chosen_verse_model.AdeebID = *input.Body.AdeebID
+	}
+	if input.Body.PoemID != nil {
+		chosen_verse_model.PoemID = *input.Body.PoemID
+	}
+
+	_ = database.Conn.Save(&chosen_verse_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
