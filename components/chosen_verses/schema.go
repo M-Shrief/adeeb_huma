@@ -25,6 +25,15 @@ type CreateOneChosenVerse_Res struct {
 	Status int
 }
 
+type CreateManyChosenVerses_Req struct {
+	Body []CreateOneChosenVerse_Req_Body
+}
+
+type CreateManyChosenVerses_Res struct {
+	Body   schemas.CreateMany_Res_Body[schemas.ChosenVerse_Descriptive]
+	Status int
+}
+
 func DBModel_To_ResModel(chosen_verse_model database.ChosenVerse) schemas.ChosenVerse_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
