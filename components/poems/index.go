@@ -60,4 +60,17 @@ func RegisterAPI(api huma.API) {
 		CreateManyPoems_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPut,
+			Path:          "/api/v1/poems/{id}",
+			Summary:       "Update One",
+			Description:   "Update One Poem",
+			Tags:          []string{"Poems"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		UpdatePoem_Handler,
+	)
+
 }

@@ -175,3 +175,41 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 		Status: http.StatusCreated}, nil
 
 }
+
+func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Update_Res, error) {
+
+	poem_model, err := gorm.G[database.Poem](database.Conn).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Poem's not found")
+	}
+	if err != nil {
+		return nil, huma.Error400BadRequest("Bad Request update Poem")
+	}
+
+	if input.Body.Intro != nil {
+		poem_model.Intro = *input.Body.Intro
+	}
+	if input.Body.Verses != nil {
+		poem_model.Verses = *input.Body.Verses
+	}
+	if input.Body.IsCouplet != nil {
+		poem_model.IsCouplet = *input.Body.IsCouplet
+	}
+	if input.Body.Reviewed != nil {
+		poem_model.Reviewed = *input.Body.Reviewed
+	}
+	if input.Body.AdeebID != nil {
+		poem_model.AdeebID = *input.Body.AdeebID
+	}
+
+	_ = database.Conn.Save(&poem_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}

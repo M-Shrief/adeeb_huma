@@ -46,6 +46,21 @@ type CreateManyPoems_Res struct {
 	Status int
 }
 
+type UpdatePoem_Req struct {
+	schemas.IDPath
+	Body UodatePoem_Req_Body
+}
+
+type UodatePoem_Req_Body struct {
+	schemas.Poem_IntroField_Optional
+	schemas.VersesField_Optional
+	schemas.IsCoupletField_Optional
+	schemas.ReviewedField_Optional
+
+	// Relations
+	schemas.AdeebIDField_Optional
+}
+
 func DBModel_To_ResModel(poem_model database.Poem) schemas.Poem_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
