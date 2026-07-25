@@ -36,7 +36,7 @@ type IsCoupletField struct {
 }
 
 type IsCoupletField_Optional struct {
-	IsCouplet *bool `json:"reviis_coupletewed" doc:"is it couplet?" required:"false"`
+	IsCouplet *bool `json:"is_couplet" doc:"is it couplet?" required:"false"`
 }
 
 type ReviewedField struct {
