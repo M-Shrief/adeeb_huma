@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[OneAdeeb_Res], error) {
+func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.Adeeb_Descriptive], error) {
 
 	list, err := gorm.G[database.Adeeb](
 		database.Conn,
@@ -34,8 +34,8 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 	}
 
 	adeebs := DBModels_To_ResModels(list)
-	res := &schemas.GetAll_Res[OneAdeeb_Res]{
-		Body: schemas.GetAll_Res_Body[OneAdeeb_Res]{
+	res := &schemas.GetAll_Res[schemas.Adeeb_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.Adeeb_Descriptive]{
 			Data:   adeebs,
 			Limit:  input.Limit,
 			Offset: input.Offset,
@@ -116,7 +116,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 
 func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (*CreateManyAdeebs_Res, error) {
 
-	var CreatedItems []OneAdeeb_Res
+	var CreatedItems []schemas.Adeeb_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
 	new_data := ReqModels_To_DBModels(input.Body)
@@ -149,7 +149,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 	}
 
 	return &CreateManyAdeebs_Res{
-		Body: schemas.CreateMany_Res_Body[OneAdeeb_Res]{
+		Body: schemas.CreateMany_Res_Body[schemas.Adeeb_Descriptive]{
 			CreatedItems: CreatedItems,
 			SuccessCount: len(CreatedItems),
 			InvalidItems: InvalidItems,

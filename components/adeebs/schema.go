@@ -10,7 +10,7 @@ type GetOneAdeeb_Req struct {
 }
 
 type GetOneAdeeb_Res struct {
-	Body   OneAdeeb_Res
+	Body   schemas.Adeeb_Descriptive
 	Status int
 }
 
@@ -26,7 +26,7 @@ type CreateOneAdeeb_Req_Body struct {
 }
 
 type CreateOneAdeeb_Res struct {
-	Body   OneAdeeb_Res
+	Body   schemas.Adeeb_Descriptive
 	Status int
 }
 
@@ -35,16 +35,8 @@ type CreateManyAdeebs_Req struct {
 }
 
 type CreateManyAdeebs_Res struct {
-	Body   schemas.CreateMany_Res_Body[OneAdeeb_Res]
+	Body   schemas.CreateMany_Res_Body[schemas.Adeeb_Descriptive]
 	Status int
-}
-
-type OneAdeeb_Res struct {
-	schemas.IDField
-	schemas.Adeeb_NameField
-	schemas.Adeeb_BioField
-	schemas.Adeeb_TimePeriodField
-	schemas.ReviewedField
 }
 
 type UpdateAdeeb_Req struct {
@@ -63,10 +55,10 @@ type DeleteAdeeb_Req struct {
 	schemas.IDPath
 }
 
-func DBModel_To_ResModel(adeeb_model database.Adeeb) OneAdeeb_Res {
+func DBModel_To_ResModel(adeeb_model database.Adeeb) schemas.Adeeb_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
-	var adeeb_res OneAdeeb_Res
+	var adeeb_res schemas.Adeeb_Descriptive
 	adeeb_res.ID = adeeb_model.ID
 	adeeb_res.Name = adeeb_model.Name
 	adeeb_res.Bio = *adeeb_model.Bio
@@ -76,8 +68,8 @@ func DBModel_To_ResModel(adeeb_model database.Adeeb) OneAdeeb_Res {
 	return adeeb_res
 }
 
-func DBModels_To_ResModels(adeeb_models []database.Adeeb) []OneAdeeb_Res {
-	var adeebs []OneAdeeb_Res
+func DBModels_To_ResModels(adeeb_models []database.Adeeb) []schemas.Adeeb_Descriptive {
+	var adeebs []schemas.Adeeb_Descriptive
 
 	for _, adeeb_model := range adeeb_models {
 		adeeb_res := DBModel_To_ResModel(adeeb_model)
