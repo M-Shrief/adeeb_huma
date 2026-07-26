@@ -1,8 +1,12 @@
 package config
 
 import (
+	"crypto/rsa"
+	"fmt"
 	"log"
+	"os"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
 )
 
@@ -46,4 +50,45 @@ func assignValues() {
 	DB_USER = envs["DB_USER"]
 	DB_NAME = envs["DB_NAME"]
 	DB_PASSWORD = envs["DB_PASSWORD"]
+
+	assignJWTKeys()
+}
+
+// JWT
+var (
+	JWT_PRIVATE_KEY  *rsa.PrivateKey
+	JWT_PUBLIC_KEY   *rsa.PublicKey
+	JWT_PRIVATE_PATH string
+	JWT_PUBLIC_PATH  string
+)
+
+func assignJWTKeys() {
+
+	JWT_PRIVATE_PATH = envs["JWT_PRIVATE_PATH"]
+	JWT_PUBLIC_PATH = envs["JWT_PUBLIC_PATH"]
+
+	jwt_Private_File, err := os.ReadFile(JWT_PRIVATE_PATH)
+	if err != nil {
+		fmt.Printf("couldn't parse private JWT secret file: %v\n", err)
+		os.Exit(1)
+	}
+
+	JWT_PRIVATE_KEY, err = jwt.ParseRSAPrivateKeyFromPEM(jwt_Private_File)
+	if err != nil {
+		fmt.Printf("couldn't parse private JWT secret: %v\n", err)
+		os.Exit(1)
+	}
+
+	// JWT
+	jwt_Public_File, err := os.ReadFile(JWT_PUBLIC_PATH)
+	if err != nil {
+		fmt.Printf("couldn't read public JWT secret file: %v\n", err)
+		os.Exit(1)
+	}
+
+	JWT_PUBLIC_KEY, err = jwt.ParseRSAPublicKeyFromPEM(jwt_Public_File)
+	if err != nil {
+		fmt.Printf("couldn't parse public JWT secret: %v\n", err)
+		os.Exit(1)
+	}
 }
