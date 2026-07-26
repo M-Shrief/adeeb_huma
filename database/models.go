@@ -60,7 +60,9 @@ type Poem struct {
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
-	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb,omitempty"`
+	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb"`
+
+	ChosenVerses []ChosenVerse `gorm:"foreignKey:PoemID;references:ID" json:"chosen_verses,omitempty"`
 }
 
 type ChosenVerse struct {
