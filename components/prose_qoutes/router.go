@@ -13,6 +13,43 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func GetAllProseQoutes_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.ProseQoute_Descriptive], error) {
+
+	list, err := gorm.G[database.ProseQoute](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "qoute"},
+				{Name: "source"},
+				{Name: "tags"},
+				{Name: "reviewed"},
+
+				{Name: "adeeb_id"},
+			},
+		}).
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Find(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /prose_qoutes.")
+		return nil, huma.Error404NotFound("Unknown error while getting prose_qoutes")
+	}
+
+	prose_qoutes := DBModels_To_DescriptiveSchemas(list)
+	res := &schemas.GetAll_Res[schemas.ProseQoute_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.ProseQoute_Descriptive]{
+			Data:   prose_qoutes,
+			Limit:  input.Limit,
+			Offset: input.Offset,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneProseQoute_Handler(ctx context.Context, input *CreateOneProseQoute_Req) (*CreateOneProseQoute_Res, error) {
 	data := ReqModel_To_DBModel(input.Body)
 
