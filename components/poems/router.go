@@ -112,13 +112,7 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 }
 
 func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*CreateOnePoem_Res, error) {
-	data := database.Poem{
-		Intro:     input.Body.Intro,
-		Verses:    input.Body.Verses,
-		IsCouplet: input.Body.IsCouplet,
-		Reviewed:  input.Body.Reviewed,
-		AdeebID:   input.Body.AdeebID,
-	}
+	data := ReqModel_To_DBModel(input.Body)
 
 	err := gorm.G[database.Poem](
 		database.Conn,

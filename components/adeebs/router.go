@@ -82,12 +82,7 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 }
 
 func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*CreateOneAdeeb_Res, error) {
-	data := database.Adeeb{
-		Name:       input.Body.Name,
-		TimePeriod: input.Body.TimePeriod,
-		Bio:        &input.Body.Bio,
-		Reviewed:   input.Body.Reviewed,
-	}
+	data := ReqModel_To_DBModel(input.Body)
 
 	err := gorm.G[database.Adeeb](
 		database.Conn,

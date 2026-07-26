@@ -110,13 +110,7 @@ func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req
 }
 
 func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVerse_Req) (*CreateOneChosenVerse_Res, error) {
-	data := database.ChosenVerse{
-		Verses:    input.Body.Verses,
-		IsCouplet: input.Body.IsCouplet,
-		Tags:      input.Body.Tags,
-		Reviewed:  input.Body.Reviewed,
-		AdeebID:   input.Body.AdeebID,
-	}
+	data := ReqModel_To_DBModel(input.Body)
 
 	err := gorm.G[database.ChosenVerse](
 		database.Conn,
