@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -81,6 +82,49 @@ func (r *RoleEnum) Scan(value interface{}) error {
 		return errors.New("invalid type for RoleEnum")
 	}
 	return nil
+}
+
+type RolesType []RoleEnum
+
+func (rs *RolesType) Scan(value interface{}) error {
+	if value == nil {
+		*rs = nil
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Roles: %v", value)
+	}
+	str := string(bytes)
+	if str == "{}" {
+		*rs = RolesType{}
+		return nil
+	}
+	// Remove surrounding braces and split
+	trimmed := strings.Trim(str, "{}")
+	parts := strings.Split(trimmed, ",")
+	result := make(RolesType, 0, len(parts))
+	for _, p := range parts {
+		result = append(result, RoleEnum(p))
+	}
+	*rs = result
+	return nil
+}
+
+func (rs RolesType) Value() (driver.Value, error) {
+	if len(rs) == 0 {
+		return "{}", nil
+	}
+	var sb strings.Builder
+	sb.WriteString("{")
+	for i, r := range rs {
+		if i > 0 {
+			sb.WriteString(",")
+		}
+		sb.WriteString(string(r))
+	}
+	sb.WriteString("}")
+	return sb.String(), nil
 }
 
 type TimePeriodEnum string
