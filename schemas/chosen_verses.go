@@ -26,4 +26,6 @@ type ChosenVerse_Descriptive struct {
 
 type ChosenVerse_Minimal struct {
 	IDField
+	VersesField
+	IsCoupletField
 }
