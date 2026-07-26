@@ -5,6 +5,19 @@ import (
 	"adeeb_huma/schemas"
 )
 
+type GetOneProseQoute_Req struct {
+	schemas.IDPath
+}
+
+type GetOneProseQoute_Res struct {
+	Body   GetOneProseQoute_Res_Body
+	Status int
+}
+type GetOneProseQoute_Res_Body struct {
+	schemas.ProseQoute_Descriptive
+	Adeeb schemas.Adeeb_Minimal `json:"adeeb"`
+}
+
 type CreateOneProseQoute_Req struct {
 	Body CreateOneProseQoute_Req_Body
 }

@@ -24,6 +24,19 @@ func RegisterAPI(api huma.API) {
 	huma.Register(
 		api,
 		huma.Operation{
+			Method:        http.MethodGet,
+			Path:          "/api/v1/prose_qoutes/{id}",
+			Summary:       "Get One",
+			Description:   "Get One ProseQoutess",
+			Tags:          []string{"ProseQoutes"},
+			DefaultStatus: http.StatusOK,
+		},
+		GetOneProseQoute_Handler,
+	)
+
+	huma.Register(
+		api,
+		huma.Operation{
 			Method:        http.MethodPost,
 			Path:          "/api/v1/prose_qoutes",
 			Summary:       "Create One",

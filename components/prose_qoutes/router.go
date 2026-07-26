@@ -50,6 +50,55 @@ func GetAllProseQoutes_Handler(ctx context.Context, input *schemas.GetAll_Req) (
 	return res, nil
 }
 
+func GetOneProseQoute_Handler(ctx context.Context, input *GetOneProseQoute_Req) (*GetOneProseQoute_Res, error) {
+
+	prose_qoute_model, err := gorm.G[database.ProseQoute](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "qoute"},
+				{Name: "source"},
+				{Name: "tags"},
+				{Name: "reviewed"},
+
+				{Name: "adeeb_id"},
+			},
+		}).
+		Preload("Adeeb", func(db gorm.PreloadBuilder) error {
+			db.Select("id", "name")
+			return nil
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("ProseQoute's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /prose_qoutes/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request getting ProseQoute")
+	}
+
+	var prose_qoute_res GetOneProseQoute_Res_Body
+	prose_qoute_res.ID = prose_qoute_model.ID
+	prose_qoute_res.Qoute = prose_qoute_model.Qoute
+	prose_qoute_res.Source = prose_qoute_model.Source
+	prose_qoute_res.Tags = prose_qoute_model.Tags
+	prose_qoute_res.Reviewed = prose_qoute_model.Reviewed
+
+	prose_qoute_res.AdeebID = prose_qoute_model.AdeebID
+	prose_qoute_res.Adeeb.ID = prose_qoute_model.Adeeb.ID
+	prose_qoute_res.Adeeb.Name = prose_qoute_model.Adeeb.Name
+
+	res := &GetOneProseQoute_Res{
+		Body:   prose_qoute_res,
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneProseQoute_Handler(ctx context.Context, input *CreateOneProseQoute_Req) (*CreateOneProseQoute_Res, error) {
 	data := ReqModel_To_DBModel(input.Body)
 
