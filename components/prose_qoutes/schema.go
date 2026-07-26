@@ -5,6 +5,25 @@ import (
 	"adeeb_huma/schemas"
 )
 
+type CreateOneProseQoute_Req struct {
+	Body CreateOneProseQoute_Req_Body
+}
+
+type CreateOneProseQoute_Req_Body struct {
+	schemas.ProseQoute_QouteField
+	schemas.ProseQoute_SourceField_Optional
+	schemas.TagsField
+	schemas.ReviewedField
+
+	// Relations
+	schemas.AdeebIDField
+}
+
+type CreateOneProseQoute_Res struct {
+	Body   schemas.ProseQoute_Descriptive
+	Status int
+}
+
 func DBModel_To_DescriptiveSchema(prose_qoute_model database.ProseQoute) schemas.ProseQoute_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
