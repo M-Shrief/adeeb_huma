@@ -74,7 +74,7 @@ type ChosenVerse struct {
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
-	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb,omitempty"`
+	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb"`
 
 	PoemID uuid.UUID `json:"poem_id"`
 	Poem   Poem      `gorm:"foreignKey:PoemID;references:ID" json:"poem"`
@@ -89,7 +89,7 @@ type ProseQoute struct {
 
 	// Relations
 	AdeebID uuid.UUID `json:"adeeb_id"`
-	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb,omitempty"`
+	Adeeb   Adeeb     `gorm:"foreignKey:AdeebID;references:ID" json:"adeeb"`
 }
 
 type Order struct {
@@ -122,10 +122,10 @@ type Print struct {
 
 	// Relations
 	OrderID uuid.UUID `json:"order_id"`
-	Order   Order     `gorm:"foreignKey:OrderID;references:ID" json:"order,omitempty"`
+	Order   Order     `gorm:"foreignKey:OrderID;references:ID" json:"order"`
 
 	UserID uuid.UUID `json:"user_id"`
-	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user,omitempty"`
+	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
 
 	// // Only for Analytics
 	PoemID        *uuid.UUID `json:"poem_id,omitempty"`
