@@ -24,6 +24,15 @@ type CreateOneProseQoute_Res struct {
 	Status int
 }
 
+type CreateManyProseQoutes_Req struct {
+	Body []CreateOneProseQoute_Req_Body
+}
+
+type CreateManyProseQoutes_Res struct {
+	Body   schemas.CreateMany_Res_Body[schemas.ProseQoute_Descriptive]
+	Status int
+}
+
 func DBModel_To_DescriptiveSchema(prose_qoute_model database.ProseQoute) schemas.ProseQoute_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.

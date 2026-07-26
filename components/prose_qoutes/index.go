@@ -7,6 +7,7 @@ import (
 )
 
 func RegisterAPI(api huma.API) {
+
 	huma.Register(
 		api,
 		huma.Operation{
@@ -19,4 +20,18 @@ func RegisterAPI(api huma.API) {
 		},
 		CreateOneProseQoute_Handler,
 	)
+
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/prose_qoutes/many",
+			Summary:       "Create Many",
+			Description:   "Create Many ProseQoutes",
+			Tags:          []string{"ProseQoutes"},
+			DefaultStatus: http.StatusCreated,
+		},
+		CreateManyProseQoutes_Handler,
+	)
+
 }
