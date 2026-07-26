@@ -68,6 +68,10 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 			db.Select("id", "name")
 			return nil
 		}).
+		Preload("ChosenVerses", func(db gorm.PreloadBuilder) error {
+			db.Select("id", "verses", "is_couplet", "poem_id")
+			return nil
+		}).
 		Where("id = ?", input.ID).
 		First(ctx)
 
@@ -89,6 +93,15 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 	poem_res.AdeebID = poem_model.AdeebID
 	poem_res.Adeeb.ID = poem_model.Adeeb.ID
 	poem_res.Adeeb.Name = poem_model.Adeeb.Name
+
+	for _, model := range poem_model.ChosenVerses {
+		var item schemas.ChosenVerse_Minimal
+		item.ID = model.ID
+		item.Verses = model.Verses
+		item.IsCouplet = model.IsCouplet
+
+		poem_res.ChosenVerses = append(poem_res.ChosenVerses, item)
+	}
 
 	res := &GetOnePoem_Res{
 		Body:   poem_res,

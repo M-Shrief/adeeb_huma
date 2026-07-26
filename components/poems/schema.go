@@ -15,7 +15,8 @@ type GetOnePoem_Res struct {
 }
 type GetOnePoem_Res_Body struct {
 	schemas.Poem_Descriptive
-	Adeeb schemas.Adeeb_Minimal `json:"adeeb"`
+	Adeeb        schemas.Adeeb_Minimal         `json:"adeeb"`
+	ChosenVerses []schemas.ChosenVerse_Minimal `json:"chosen_verses"`
 }
 
 type CreateOnePoem_Req struct {
