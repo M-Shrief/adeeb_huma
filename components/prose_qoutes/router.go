@@ -175,3 +175,42 @@ func CreateManyProseQoutes_Handler(ctx context.Context, input *CreateManyProseQo
 		Status: http.StatusCreated}, nil
 
 }
+
+func UpdateProseQoute_Handler(ctx context.Context, input *UpdateProseQoute_Req) (*schemas.Update_Res, error) {
+
+	prose_qoute_model, err := gorm.G[database.ProseQoute](database.Conn).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("ProseQoute's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /prose_qoutes/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request update ProseQoute")
+	}
+
+	if input.Body.Qoute != nil {
+		prose_qoute_model.Qoute = *input.Body.Qoute
+	}
+	if input.Body.Source != nil {
+		prose_qoute_model.Source = input.Body.Source
+	}
+	if input.Body.Tags != nil {
+		prose_qoute_model.Tags = *input.Body.Tags
+	}
+	if input.Body.Reviewed != nil {
+		prose_qoute_model.Reviewed = *input.Body.Reviewed
+	}
+	if input.Body.AdeebID != nil {
+		prose_qoute_model.AdeebID = *input.Body.AdeebID
+	}
+
+	database.Conn.Save(&prose_qoute_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}

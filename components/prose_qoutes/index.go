@@ -60,4 +60,17 @@ func RegisterAPI(api huma.API) {
 		CreateManyProseQoutes_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPut,
+			Path:          "/api/v1/prose_qoutes/{id}",
+			Summary:       "Update One",
+			Description:   "Update One ProseQoute",
+			Tags:          []string{"ProseQoutes"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		UpdateProseQoute_Handler,
+	)
+
 }
