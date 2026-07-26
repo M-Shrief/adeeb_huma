@@ -35,7 +35,7 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 		return nil, huma.Error400BadRequest("Uknown error getting adeebs")
 	}
 
-	adeebs := DBModels_To_ResModels(list)
+	adeebs := DBModels_To_DescriptiveSchemas(list)
 	res := &schemas.GetAll_Res[schemas.Adeeb_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Adeeb_Descriptive]{
 			Data:   adeebs,
@@ -72,7 +72,7 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
 	}
 
-	adeeb_res := DBModel_To_ResModel(adeeb_model)
+	adeeb_res := DBModel_To_DescriptiveSchema(adeeb_model)
 	res := &GetOneAdeeb_Res{
 		Body:   adeeb_res,
 		Status: http.StatusOK,
@@ -112,7 +112,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 		return nil, huma.Error400BadRequest("Bad Request creating Adeeb.")
 	}
 
-	adeeb := DBModel_To_ResModel(data)
+	adeeb := DBModel_To_DescriptiveSchema(data)
 	return &CreateOneAdeeb_Res{Body: adeeb, Status: http.StatusCreated}, nil
 
 }
@@ -147,7 +147,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 			continue
 		}
 
-		new_adeeb := DBModel_To_ResModel(item)
+		new_adeeb := DBModel_To_DescriptiveSchema(item)
 		CreatedItems = append(CreatedItems, new_adeeb)
 
 	}

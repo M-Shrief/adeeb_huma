@@ -37,7 +37,7 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 		return nil, huma.Error404NotFound("Unknown error while getting poems")
 	}
 
-	poems := DBModels_To_ResModels(list)
+	poems := DBModels_To_DescriptiveSchemas(list)
 	res := &schemas.GetAll_Res[schemas.Poem_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Poem_Descriptive]{
 			Data:   poems,
@@ -143,7 +143,7 @@ func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*Crea
 		return nil, huma.Error400BadRequest("Bad Request creating Poem.")
 	}
 
-	poem := DBModel_To_ResModel(data)
+	poem := DBModel_To_DescriptiveSchema(data)
 	return &CreateOnePoem_Res{Body: poem, Status: http.StatusCreated}, nil
 }
 
@@ -179,7 +179,7 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 			continue
 		}
 
-		new_poem := DBModel_To_ResModel(item)
+		new_poem := DBModel_To_DescriptiveSchema(item)
 		CreatedItems = append(CreatedItems, new_poem)
 
 	}

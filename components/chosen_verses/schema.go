@@ -68,7 +68,7 @@ type DeleteChosenVerse_Req struct {
 	schemas.IDPath
 }
 
-func DBModel_To_ResModel(chosen_verse_model database.ChosenVerse) schemas.ChosenVerse_Descriptive {
+func DBModel_To_DescriptiveSchema(chosen_verse_model database.ChosenVerse) schemas.ChosenVerse_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
 	var chosen_verse_res schemas.ChosenVerse_Descriptive
@@ -84,11 +84,11 @@ func DBModel_To_ResModel(chosen_verse_model database.ChosenVerse) schemas.Chosen
 	return chosen_verse_res
 }
 
-func DBModels_To_ResModels(chosen_verse_models []database.ChosenVerse) []schemas.ChosenVerse_Descriptive {
+func DBModels_To_DescriptiveSchemas(chosen_verse_models []database.ChosenVerse) []schemas.ChosenVerse_Descriptive {
 	var poems []schemas.ChosenVerse_Descriptive
 
 	for _, adeeb_model := range chosen_verse_models {
-		chosen_verse_res := DBModel_To_ResModel(adeeb_model)
+		chosen_verse_res := DBModel_To_DescriptiveSchema(adeeb_model)
 		poems = append(poems, chosen_verse_res)
 	}
 

@@ -38,7 +38,7 @@ func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) 
 		return nil, huma.Error404NotFound("Unknown error while getting chosen_verses")
 	}
 
-	chosen_verses := DBModels_To_ResModels(list)
+	chosen_verses := DBModels_To_DescriptiveSchemas(list)
 	res := &schemas.GetAll_Res[schemas.ChosenVerse_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.ChosenVerse_Descriptive]{
 			Data:   chosen_verses,
@@ -142,7 +142,7 @@ func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVer
 		return nil, huma.Error400BadRequest("Bad Request creating ChosenVerse.")
 	}
 
-	chosen_verse := DBModel_To_ResModel(data)
+	chosen_verse := DBModel_To_DescriptiveSchema(data)
 	return &CreateOneChosenVerse_Res{Body: chosen_verse, Status: http.StatusCreated}, nil
 }
 
@@ -179,7 +179,7 @@ func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosen
 			continue
 		}
 
-		new_chosen_verse := DBModel_To_ResModel(item)
+		new_chosen_verse := DBModel_To_DescriptiveSchema(item)
 		CreatedItems = append(CreatedItems, new_chosen_verse)
 
 	}

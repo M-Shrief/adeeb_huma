@@ -55,7 +55,7 @@ type DeleteAdeeb_Req struct {
 	schemas.IDPath
 }
 
-func DBModel_To_ResModel(adeeb_model database.Adeeb) schemas.Adeeb_Descriptive {
+func DBModel_To_DescriptiveSchema(adeeb_model database.Adeeb) schemas.Adeeb_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
 	var adeeb_res schemas.Adeeb_Descriptive
@@ -68,11 +68,11 @@ func DBModel_To_ResModel(adeeb_model database.Adeeb) schemas.Adeeb_Descriptive {
 	return adeeb_res
 }
 
-func DBModels_To_ResModels(adeeb_models []database.Adeeb) []schemas.Adeeb_Descriptive {
+func DBModels_To_DescriptiveSchemas(adeeb_models []database.Adeeb) []schemas.Adeeb_Descriptive {
 	var adeebs []schemas.Adeeb_Descriptive
 
 	for _, adeeb_model := range adeeb_models {
-		adeeb_res := DBModel_To_ResModel(adeeb_model)
+		adeeb_res := DBModel_To_DescriptiveSchema(adeeb_model)
 		adeebs = append(adeebs, adeeb_res)
 	}
 
