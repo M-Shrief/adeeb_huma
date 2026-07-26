@@ -3,7 +3,7 @@ package main
 import (
 	"adeeb_huma/config"
 	"adeeb_huma/database"
-	"adeeb_huma/logger"
+	"adeeb_huma/internal/logger"
 	"adeeb_huma/router"
 	"fmt"
 	"net/http"

@@ -2,7 +2,7 @@ package adeebs
 
 import (
 	"adeeb_huma/database"
-	"adeeb_huma/logger"
+	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
 	"context"
 	"errors"

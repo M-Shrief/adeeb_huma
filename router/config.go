@@ -1,7 +1,7 @@
 package router
 
 import (
-	"adeeb_huma/logger"
+	"adeeb_huma/internal/logger"
 	"time"
 
 	"github.com/go-chi/chi/v5"
