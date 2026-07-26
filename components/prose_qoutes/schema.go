@@ -61,6 +61,10 @@ type UodateProseQoute_Req_Body struct {
 	schemas.AdeebIDField_Optional
 }
 
+type DeleteProseQoute_Req struct {
+	schemas.IDPath
+}
+
 func DBModel_To_DescriptiveSchema(prose_qoute_model database.ProseQoute) schemas.ProseQoute_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.

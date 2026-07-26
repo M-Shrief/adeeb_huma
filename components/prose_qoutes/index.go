@@ -73,4 +73,17 @@ func RegisterAPI(api huma.API) {
 		UpdateProseQoute_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodDelete,
+			Path:          "/api/v1/prose_qoutes/{id}",
+			Summary:       "Delete One",
+			Description:   "Delete One ProseQoute",
+			Tags:          []string{"ProseQoutes"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		DeleteProseQouteHandler,
+	)
+
 }

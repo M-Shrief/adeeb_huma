@@ -214,3 +214,21 @@ func UpdateProseQoute_Handler(ctx context.Context, input *UpdateProseQoute_Req) 
 
 	return res, nil
 }
+
+func DeleteProseQouteHandler(ctx context.Context, input *DeleteProseQoute_Req) (*schemas.Delete_Res, error) {
+
+	_, err := gorm.G[database.ProseQoute](database.Conn).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in DELETE /prose_qoutes/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request Deleting ProseQoute")
+	}
+
+	res := &schemas.Delete_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
