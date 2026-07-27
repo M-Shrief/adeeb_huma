@@ -12,11 +12,12 @@ const (
 	OPEnum_Read  OPEnum = "read"
 )
 
-func CreatePermissions(roles []database.RoleEnum, op OPEnum) []string {
+func CreatePermissions(roles []database.RoleEnum) []string {
 	var permissions []string
 
 	for _, role := range roles {
-		permissions = append(permissions, CreatePermission(role, op))
+		permissions = append(permissions, CreatePermission(role, OPEnum_Read))
+		permissions = append(permissions, CreatePermission(role, OPEnum_Write))
 	}
 
 	return permissions

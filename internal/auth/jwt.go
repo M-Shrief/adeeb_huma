@@ -10,9 +10,9 @@ import (
 )
 
 type JWTUserClaim struct {
-	ID    string              `json:"id"`
-	Name  string              `json:"name"`
-	Roles []database.RoleEnum `json:"roles"`
+	ID       string              `json:"id"`
+	Username string              `json:"username"`
+	Roles    []database.RoleEnum `json:"roles"`
 }
 
 func CreateJWT(ttl time.Duration, user JWTUserClaim, permissions []string) (string, error) {
