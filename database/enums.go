@@ -88,27 +88,79 @@ type RolesType []RoleEnum
 
 func (rs *RolesType) Scan(value interface{}) error {
 	if value == nil {
-		*rs = nil
+		*rs = []RoleEnum{}
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Roles: %v", value)
+
+	var rawString string
+
+	// 1. Handle different input types from the driver
+	switch v := value.(type) {
+	case string:
+		rawString = v
+	case []byte:
+		rawString = string(v)
+	default:
+		return fmt.Errorf("failed to scan Roles, expected string or []byte, got %T", value)
 	}
-	str := string(bytes)
-	if str == "{}" {
-		*rs = RolesType{}
+
+	// 2. Handle empty cases
+	if rawString == "" || rawString == "{}" {
+		*rs = []RoleEnum{}
 		return nil
 	}
-	// Remove surrounding braces and split
-	trimmed := strings.Trim(str, "{}")
-	parts := strings.Split(trimmed, ",")
-	result := make(RolesType, 0, len(parts))
-	for _, p := range parts {
-		result = append(result, RoleEnum(p))
+
+	// 3. Parse PostgreSQL Array Literal format: "{val1,val2}"
+	// Remove surrounding curly braces
+	if len(rawString) >= 2 && rawString[0] == '{' && rawString[len(rawString)-1] == '}' {
+		rawString = rawString[1 : len(rawString)-1]
 	}
+	// else {
+	// // Fallback if it's just a CSV without braces
+	// return fmt.Errorf("unexpected array format: %s", rawString)
+	// }
+
+	// 4. Split and Validate
+	// Note: This simple split fails if roles contain commas or escaped quotes.
+	// For robust parsing of quoted strings, use lib/pq's internal parser or strings.Split with care.
+	if rawString == "" {
+		*rs = []RoleEnum{}
+		return nil
+	}
+
+	strs := strings.Split(rawString, ",")
+	result := make([]RoleEnum, 0, len(strs))
+
+	for _, s := range strs {
+		s = strings.TrimSpace(s)
+
+		// Handle quoted strings if your data contains spaces/special chars (e.g. "{role one,role two}")
+		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+			s = s[1 : len(s)-1]
+		}
+
+		if s == "" {
+			continue
+		}
+
+		role := RoleEnum(s)
+		if !IsValidRoleEnum(role) {
+			return fmt.Errorf("invalid role scanned: %s", role)
+		}
+		result = append(result, role)
+	}
+
 	*rs = result
 	return nil
+}
+
+// Helper to validate
+func IsValidRoleEnum(r RoleEnum) bool {
+	switch r {
+	case RoleEnum_Analytics, RoleEnum_Management, RoleEnum_DBA, RoleEnum_Normal, RoleEnum_Banned:
+		return true
+	}
+	return false
 }
 
 func (rs RolesType) Value() (driver.Value, error) {
