@@ -5,6 +5,7 @@ import (
 	"adeeb_huma/components/chosen_verses"
 	"adeeb_huma/components/poems"
 	"adeeb_huma/components/prose_qoutes"
+	"adeeb_huma/components/users"
 	"adeeb_huma/schemas"
 	"context"
 	"net/http"
@@ -74,6 +75,7 @@ func RegisterAllRoutes() {
 	chosen_verses.RegisterAPI(API)
 	prose_qoutes.RegisterAPI(API)
 
+	users.RegisterAPI(API)
 }
 
 type IndexResponse_JSONBody struct {
