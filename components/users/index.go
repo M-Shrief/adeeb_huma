@@ -20,4 +20,17 @@ func RegisterAPI(api huma.API) {
 		Signup_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/users/login",
+			Summary:       "User Login",
+			Description:   "User Login.",
+			Tags:          []string{"Users"},
+			DefaultStatus: http.StatusOK,
+		},
+		Login_Handler,
+	)
+
 }

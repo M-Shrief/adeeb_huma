@@ -10,6 +10,13 @@ type Signup_Req struct {
 	}
 }
 
+type Login_Req struct {
+	Body struct {
+		schemas.User_UsernameField
+		schemas.User_PasswordField
+	}
+}
+
 type UserAuthorized_Res struct {
 	Body   UserAuthorized_Res_Body
 	Status int

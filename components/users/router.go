@@ -70,3 +70,46 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 		Status: http.StatusCreated,
 	}, nil
 }
+
+func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, error) {
+	user_model, err := gorm.G[database.User](database.Conn).
+		Where("username = ?", input.Body.Username).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("User's doesn't exist")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /poems/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request trying to login, try again later")
+	}
+
+	err = auth.VerifyPassword(input.Body.Password, user_model.Passsword)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Password is incorrect")
+	}
+
+	token, err := auth.CreateJWT(
+		time.Hour*2,
+		auth.JWTUserClaim{
+			ID:       user_model.ID.String(),
+			Username: user_model.Username,
+			Roles:    user_model.Roles,
+		},
+		auth.CreatePermissions(user_model.Roles),
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown error creating JWT token in POST /users/signup")
+		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
+	}
+
+	user := UserData{}
+	user.ID = user_model.ID
+	user.Username = user_model.Username
+	user.Roles = user_model.Roles
+	return &UserAuthorized_Res{
+		Body:   UserAuthorized_Res_Body{user, token},
+		Status: http.StatusCreated,
+	}, nil
+
+}
