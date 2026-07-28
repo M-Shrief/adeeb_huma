@@ -4,6 +4,7 @@ import (
 	"adeeb_huma/database"
 	"adeeb_huma/internal/auth"
 	"adeeb_huma/internal/logger"
+	"adeeb_huma/schemas"
 	"context"
 	"errors"
 	"net/http"
@@ -61,7 +62,7 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
 	}
 
-	user := UserData{}
+	user := schemas.User_Descriptive{}
 	user.ID = user_model.ID
 	user.Username = user_model.Username
 	user.Roles = user_model.Roles
@@ -103,7 +104,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
 	}
 
-	user := UserData{}
+	user := schemas.User_Descriptive{}
 	user.ID = user_model.ID
 	user.Username = user_model.Username
 	user.Roles = user_model.Roles

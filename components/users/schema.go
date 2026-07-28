@@ -23,11 +23,6 @@ type UserAuthorized_Res struct {
 }
 
 type UserAuthorized_Res_Body struct {
-	User  UserData `json:"user" doc:"User's data"`
-	Token string   `json:"token"`
-}
-type UserData struct {
-	schemas.IDField
-	schemas.User_UsernameField
-	schemas.User_RolesField
+	User  schemas.User_Descriptive `json:"user" doc:"User's data"`
+	Token string                   `json:"token"`
 }
