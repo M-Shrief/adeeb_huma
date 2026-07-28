@@ -319,3 +319,61 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 
 	return res, nil
 }
+
+func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*schemas.Update_Res, error) {
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_model, err := gorm.G[database.User](database.Conn).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
+		return nil, huma.Error404NotFound("Unknown error while updating current user")
+	}
+
+	if input.Body.Username != nil {
+		user_model.Username = *input.Body.Username
+	}
+	if input.Body.Password != nil {
+		new_hashed_password, err := auth.HashPassword(*input.Body.Password)
+		if err != nil {
+			logger.Error().Err(err).Msg("Error hashing passsord in POST /users/signup")
+			return nil, huma.Error400BadRequest("Couldn't process the password")
+		}
+		user_model.Password = new_hashed_password
+	}
+	if input.Body.Roles != nil {
+		roles := utils.EnsureSliceItemsAreUnique(*input.Body.Roles)
+		if slices.Contains(roles, database.RoleEnum_Normal) == false {
+			roles = append(roles, database.RoleEnum_Normal)
+		}
+		user_model.Roles = roles
+	}
+
+	database.Conn.Save(&user_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}

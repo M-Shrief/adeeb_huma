@@ -58,6 +58,16 @@ type UpdateCurrentUser_Req struct {
 	schemas.AuthHeader
 }
 
+type UpdateUserByID_Req struct {
+	Body struct {
+		schemas.User_UsernameField_Optional
+		schemas.User_PasswordField_Optional
+		schemas.User_RolesField_Optional
+	}
+	schemas.AuthHeader
+	schemas.IDPath
+}
+
 func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
