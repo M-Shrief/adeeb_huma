@@ -416,3 +416,41 @@ func DeleteCurrentUser_Handler(ctx context.Context, input *DeleteCurrentUser_Req
 
 	return res, nil
 }
+
+func DeleteUserByID_Handler(ctx context.Context, input *DeleteUserByID_Req) (*schemas.Delete_Res, error) {
+
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	_, err = gorm.G[database.User](database.Conn).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in DELETE /users/}id}.")
+		return nil, huma.Error400BadRequest("Bad Request deleting User by ID")
+	}
+
+	res := &schemas.Delete_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}

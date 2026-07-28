@@ -72,6 +72,11 @@ type DeleteCurrentUser_Req struct {
 	schemas.AuthHeader
 }
 
+type DeleteUserByID_Req struct {
+	schemas.AuthHeader
+	schemas.IDPath
+}
+
 func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
