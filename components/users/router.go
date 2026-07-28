@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func GetAllUsers_Handler(ctx context.Context, input *GetAll_Req) (*schemas.GetAll_Res[schemas.User_Descriptive], error) {
+func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.GetAll_Res[schemas.User_Descriptive], error) {
 
 	claims, err := auth.VerifyJWT(input.Auth)
 	if err != nil {

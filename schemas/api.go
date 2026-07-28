@@ -43,3 +43,7 @@ type Update_Res struct {
 type Delete_Res struct {
 	Status int
 }
+
+type AuthHeader struct {
+	Auth string `header:"Authorization" required:"true"`
+}

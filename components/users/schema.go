@@ -30,9 +30,9 @@ type UserAuthorized_Res_Body struct {
 	Token string                   `json:"token"`
 }
 
-type GetAll_Req struct {
+type GetAllUsers_Req struct {
 	schemas.GetAll_Req
-	Auth string `header:"Authorization" required:"true"`
+	schemas.AuthHeader
 }
 
 func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
