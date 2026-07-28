@@ -71,3 +71,11 @@ type PoemIDField struct {
 type PoemIDField_Optional struct {
 	PoemID *uuid.UUID `json:"poem_id" nullable:"true" required:"false"`
 }
+
+type UserIDField struct {
+	UserID uuid.UUID `json:"user_id"`
+}
+
+type UserIDField_Optional struct {
+	UserID *uuid.UUID `json:"user_id" nullable:"true" required:"false"`
+}
