@@ -4,7 +4,6 @@ import (
 	"adeeb_huma/database"
 	"adeeb_huma/internal/auth"
 	"adeeb_huma/internal/logger"
-	"adeeb_huma/schemas"
 	"context"
 	"errors"
 	"net/http"
@@ -62,12 +61,8 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
 	}
 
-	user := schemas.User_Descriptive{}
-	user.ID = user_model.ID
-	user.Username = user_model.Username
-	user.Roles = user_model.Roles
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{user, token},
+		Body:   UserAuthorized_Res_Body{DBModel_To_DescriptiveSchema(user_model), token},
 		Status: http.StatusCreated,
 	}, nil
 }
@@ -104,12 +99,8 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
 	}
 
-	user := schemas.User_Descriptive{}
-	user.ID = user_model.ID
-	user.Username = user_model.Username
-	user.Roles = user_model.Roles
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{user, token},
+		Body:   UserAuthorized_Res_Body{DBModel_To_DescriptiveSchema(user_model), token},
 		Status: http.StatusCreated,
 	}, nil
 

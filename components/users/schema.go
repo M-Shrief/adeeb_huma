@@ -1,6 +1,9 @@
 package users
 
-import "adeeb_huma/schemas"
+import (
+	"adeeb_huma/database"
+	"adeeb_huma/schemas"
+)
 
 type Signup_Req struct {
 	Body struct {
@@ -25,4 +28,26 @@ type UserAuthorized_Res struct {
 type UserAuthorized_Res_Body struct {
 	User  schemas.User_Descriptive `json:"user" doc:"User's data"`
 	Token string                   `json:"token"`
+}
+
+func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var user_res schemas.User_Descriptive
+	user_res.ID = user_model.ID
+	user_res.Username = user_model.Username
+	user_res.Roles = user_model.Roles
+
+	return user_res
+}
+
+func DBModels_To_DescriptiveSchemas(user_models []database.User) []schemas.User_Descriptive {
+	var users []schemas.User_Descriptive
+
+	for _, adeeb_model := range user_models {
+		user_res := DBModel_To_DescriptiveSchema(adeeb_model)
+		users = append(users, user_res)
+	}
+
+	return users
 }
