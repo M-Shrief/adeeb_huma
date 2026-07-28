@@ -41,7 +41,7 @@ func RegisterAPI(api huma.API) {
 			Summary:       "Get All",
 			Description:   "Get All Users",
 			Tags:          []string{"Users"},
-			DefaultStatus: http.StatusCreated,
+			DefaultStatus: http.StatusOK,
 		},
 		GetAllUsers_Handler,
 	)
