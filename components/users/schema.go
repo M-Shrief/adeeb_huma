@@ -39,6 +39,11 @@ type GetCurrentUser_Req struct {
 	schemas.AuthHeader
 }
 
+type GetUserByID_Req struct {
+	schemas.AuthHeader
+	schemas.IDPath
+}
+
 type GetOneUser_Res struct {
 	Body   schemas.User_Descriptive
 	Status int

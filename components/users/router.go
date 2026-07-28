@@ -116,6 +116,54 @@ func GetCurrentUser_Handler(ctx context.Context, input *GetCurrentUser_Req) (*Ge
 	return res, nil
 }
 
+func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUser_Res, error) {
+
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_model, err := gorm.G[database.User](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "username"},
+				{Name: "roles"},
+			},
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /users/{id}.")
+		return nil, huma.Error404NotFound("Unknown error while users by ID")
+	}
+
+	user := DBModel_To_DescriptiveSchema(user_model)
+	res := &GetOneUser_Res{
+		Body:   user,
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res, error) {
 	new_hashed_password, err := auth.HashPassword(input.Body.Password)
 	if err != nil {
