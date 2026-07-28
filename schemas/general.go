@@ -72,10 +72,26 @@ type PoemIDField_Optional struct {
 	PoemID *uuid.UUID `json:"poem_id" nullable:"true" required:"false"`
 }
 
+type ChosenVerseIDField_Optional struct {
+	ChosenVerseID *uuid.UUID `json:"chosen_verse_id" nullable:"true" required:"false"`
+}
+
+type ProseQouteIDField_Optional struct {
+	ProseQouteID *uuid.UUID `json:"prose_qoute_id" nullable:"true" required:"false"`
+}
+
 type UserIDField struct {
 	UserID uuid.UUID `json:"user_id"`
 }
 
 type UserIDField_Optional struct {
 	UserID *uuid.UUID `json:"user_id" nullable:"true" required:"false"`
+}
+
+type OrderIDField struct {
+	OrderID uuid.UUID `json:"order_id"`
+}
+
+type OrderIDField_Optional struct {
+	OrderID *uuid.UUID `json:"order_id" nullable:"true" required:"false"`
 }
