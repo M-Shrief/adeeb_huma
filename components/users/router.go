@@ -4,6 +4,8 @@ import (
 	"adeeb_huma/database"
 	"adeeb_huma/internal/auth"
 	"adeeb_huma/internal/logger"
+	"adeeb_huma/internal/utils"
+	"adeeb_huma/schemas"
 	"context"
 	"errors"
 	"net/http"
@@ -13,6 +15,58 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func GetAllUsers_Handler(ctx context.Context, input *GetAll_Req) (*schemas.GetAll_Res[schemas.User_Descriptive], error) {
+
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
+	}
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	list, err := gorm.G[database.User](
+		database.Conn,
+		clause.Select{
+			Columns: []clause.Column{
+				{Name: "id"},
+				{Name: "username"},
+				{Name: "roles"},
+			},
+		}).
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Find(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /users.")
+		return nil, huma.Error404NotFound("Unknown error while getting users")
+	}
+
+	users := DBModels_To_DescriptiveSchemas(list)
+	res := &schemas.GetAll_Res[schemas.User_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.User_Descriptive]{
+			Data:   users,
+			Limit:  input.Limit,
+			Offset: input.Offset,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
 
 func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res, error) {
 	new_hashed_password, err := auth.HashPassword(input.Body.Password)

@@ -30,6 +30,11 @@ type UserAuthorized_Res_Body struct {
 	Token string                   `json:"token"`
 }
 
+type GetAll_Req struct {
+	schemas.GetAll_Req
+	Auth string `header:"Authorization" required:"true"`
+}
+
 func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
