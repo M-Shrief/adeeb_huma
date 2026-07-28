@@ -39,7 +39,10 @@ func CheckPermissions(authorized_list, user_permissions []string, op OPEnum) boo
 			break
 		}
 
-		isAuthorized = slices.Contains(authorized_list, perm) || false
+		it_contains_perm := slices.Contains(authorized_list, perm)
+		if it_contains_perm {
+			isAuthorized = true
+		}
 	}
 
 	if isBanned {
