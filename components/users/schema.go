@@ -68,6 +68,10 @@ type UpdateUserByID_Req struct {
 	schemas.IDPath
 }
 
+type BanUserByID_Req struct {
+	schemas.AuthHeader
+	schemas.IDPath
+}
 type DeleteCurrentUser_Req struct {
 	schemas.AuthHeader
 }

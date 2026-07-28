@@ -346,8 +346,8 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 		First(ctx)
 
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
-		return nil, huma.Error400BadRequest("Unknown error while updating current user")
+		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}.")
+		return nil, huma.Error400BadRequest("Unknown error while updating user bu id")
 	}
 
 	if input.Body.Username != nil {
@@ -370,6 +370,41 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 	}
 
 	database.Conn.Save(&user_model)
+
+	res := &schemas.Update_Res{
+		Status: http.StatusNoContent,
+	}
+
+	return res, nil
+}
+
+func BanUserByID_Handler(ctx context.Context, input *BanUserByID_Req) (*schemas.Update_Res, error) {
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	// We use raw sql to make it in one query, it's fast and ensure uniqueness like we do in the server.
+	_, err = database.Conn.Raw("UPDATE users set roles =  (select array_agg(distinct e) from unnest(array_append(users.roles, $2::role_enum)) e) WHERE id = $1", input.ID.String(), "Banned").Rows()
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}/ban.")
+		return nil, huma.Error400BadRequest("Unknown error while banning user by id")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,

@@ -101,6 +101,19 @@ func RegisterAPI(api huma.API) {
 	huma.Register(
 		api,
 		huma.Operation{
+			Method:        http.MethodPut,
+			Path:          "/api/v1/users/{id}/ban",
+			Summary:       "Ban User By ID",
+			Description:   "Ban User By ID",
+			Tags:          []string{"Users"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		BanUserByID_Handler,
+	)
+
+	huma.Register(
+		api,
+		huma.Operation{
 			Method:        http.MethodDelete,
 			Path:          "/api/v1/users/me",
 			Summary:       "Delete Current User",
