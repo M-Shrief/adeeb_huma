@@ -121,7 +121,7 @@ type Print struct {
 	IsCouplet *bool           `gorm:"default:true" json:"is_couplet"`
 
 	// Relations
-	OrderID uuid.UUID `json:"order_id"`
+	OrderID uuid.UUID `json:"order_id" gorm:"not null"`
 	Order   Order     `gorm:"foreignKey:OrderID;references:ID" json:"order"`
 
 	UserID uuid.UUID `json:"user_id"`
