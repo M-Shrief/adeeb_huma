@@ -104,7 +104,7 @@ type Order struct {
 
 	// Relations
 	UserID uuid.UUID `json:"user_id"`
-	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user,omitempty"`
+	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
 
 	Prints []Print `gorm:"foreignKey:OrderID;references:ID" json:"prints"`
 }

@@ -279,7 +279,7 @@ type OutfitTypeEnum string
 
 const (
 	OutfitTypeEnum_Tshirt7    OutfitTypeEnum = "تيشيرت - لياقة 7"
-	OutfitTypeEnum_TshirtHalf OutfitTypeEnum = "تيشيرت - نص لياقة "
+	OutfitTypeEnum_TshirtHalf OutfitTypeEnum = "تيشيرت - نص لياقة"
 	OutfitTypeEnum_TshirtPolo OutfitTypeEnum = "تشيرت - لياقة بولو"
 	OutfitTypeEnum_Jacket     OutfitTypeEnum = "جاكيت"
 	OutfitTypeEnum_Sweetshirt OutfitTypeEnum = "سويت شيرت"
