@@ -29,7 +29,7 @@ type User_UsernameField struct {
 }
 
 type User_UsernameField_Optional struct {
-	Username string `json:"username" doc:"User's name" minLength:"4" maxLength:"256" required:"false"`
+	Username *string `json:"username" doc:"User's name" minLength:"4" maxLength:"256" required:"false"`
 }
 
 type User_PasswordField struct {
@@ -37,7 +37,7 @@ type User_PasswordField struct {
 }
 
 type User_PasswordField_Optional struct {
-	Password string `json:"password" doc:"Password's name" minLength:"4" maxLength:"256" required:"false"`
+	Password *string `json:"password" doc:"Password's name" minLength:"4" maxLength:"256" required:"false"`
 }
 
 type User_RolesField struct {
@@ -45,5 +45,5 @@ type User_RolesField struct {
 }
 
 type User_RolesField_Optional struct {
-	Roles database.RolesType `json:"roles" enum:"Normal,Banned,Management,DBA,Analytics" doc:"User's roles" required:"false"`
+	Roles *database.RolesType `json:"roles" enum:"Normal,Banned,Management,DBA,Analytics" doc:"User's roles" required:"false"`
 }
