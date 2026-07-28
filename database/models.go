@@ -27,9 +27,9 @@ type BaseModel struct {
 
 type User struct {
 	BaseModel
-	Username  string    `gorm:"size:256;not null;unique"`
-	Passsword string    `gorm:"size:256;not null"`
-	Roles     RolesType `gorm:"type:role_enum[]"`
+	Username string    `gorm:"size:256;not null;unique"`
+	Password string    `gorm:"size:256;not null"`
+	Roles    RolesType `gorm:"type:role_enum[]"`
 
 	// Relations
 	Orders []Order `gorm:"foreignKey:UserID;references:ID"`

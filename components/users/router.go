@@ -177,9 +177,9 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 		roles = append(roles, database.RoleEnum_Normal)
 	}
 	user_model := database.User{
-		Username:  input.Body.Username,
-		Passsword: new_hashed_password,
-		Roles:     roles,
+		Username: input.Body.Username,
+		Password: new_hashed_password,
+		Roles:    roles,
 	}
 
 	err = gorm.G[database.User](
@@ -235,7 +235,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 		return nil, huma.Error400BadRequest("Bad Request trying to login, try again later")
 	}
 
-	err = auth.VerifyPassword(input.Body.Password, user_model.Passsword)
+	err = auth.VerifyPassword(input.Body.Password, user_model.Password)
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Password is incorrect")
 	}
