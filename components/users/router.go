@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -171,10 +172,14 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 		return nil, huma.Error400BadRequest("Couldn't process the password")
 	}
 
+	roles := utils.EnsureSliceItemsAreUnique(input.Body.Roles)
+	if slices.Contains(roles, database.RoleEnum_Normal) == false {
+		roles = append(roles, database.RoleEnum_Normal)
+	}
 	user_model := database.User{
 		Username:  input.Body.Username,
 		Passsword: new_hashed_password,
-		Roles:     input.Body.Roles,
+		Roles:     roles,
 	}
 
 	err = gorm.G[database.User](
