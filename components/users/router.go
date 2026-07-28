@@ -289,7 +289,7 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
-		return nil, huma.Error404NotFound("Unknown error while updating current user")
+		return nil, huma.Error400BadRequest("Unknown error while updating current user")
 	}
 
 	if input.Body.Username != nil {
@@ -347,7 +347,7 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
-		return nil, huma.Error404NotFound("Unknown error while updating current user")
+		return nil, huma.Error400BadRequest("Unknown error while updating current user")
 	}
 
 	if input.Body.Username != nil {
