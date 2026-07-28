@@ -46,4 +46,17 @@ func RegisterAPI(api huma.API) {
 		GetAllUsers_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodGet,
+			Path:          "/api/v1/users/me",
+			Summary:       "Get Current User",
+			Description:   "Get Current User",
+			Tags:          []string{"Users"},
+			DefaultStatus: http.StatusOK,
+		},
+		GetCurrentUser_Handler,
+	)
+
 }
