@@ -98,4 +98,17 @@ func RegisterAPI(api huma.API) {
 		UpdateUserByID_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodDelete,
+			Path:          "/api/v1/users/me",
+			Summary:       "Delete Current User",
+			Description:   "Delete Current User",
+			Tags:          []string{"Users"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		DeleteCurrentUser_Handler,
+	)
+
 }
