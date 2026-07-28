@@ -72,4 +72,17 @@ func RegisterAPI(api huma.API) {
 		GetUserByID_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPut,
+			Path:          "/api/v1/users/me",
+			Summary:       "Update Current User",
+			Description:   "Update Current User",
+			Tags:          []string{"Users"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		UpdateCurrentUser_Handler,
+	)
+
 }
