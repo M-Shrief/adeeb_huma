@@ -15,34 +15,25 @@ import (
 
 func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.Poem_Descriptive], error) {
 
-	list, err := gorm.G[database.Poem](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "intro"},
-				{Name: "verses"},
-				{Name: "is_couplet"},
-				{Name: "reviewed"},
-
-				{Name: "adeeb_id"},
-			},
-		}).
+	var results []PoemWithTotalCount
+	err := database.Conn.Table("poems").
+		Select("*, COUNT(*) OVER() as total_count").
 		Limit(input.Limit).
 		Offset(input.Offset).
-		Find(ctx)
+		Find(&results).Error
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in GET /poems.")
 		return nil, huma.Error404NotFound("Unknown error while getting poems")
 	}
 
-	poems := DBModels_To_ResSchemas(list)
+	poems, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.Poem_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Poem_Descriptive]{
-			Data:   poems,
-			Limit:  input.Limit,
-			Offset: input.Offset,
+			Data:       poems,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
 		},
 		Status: http.StatusOK,
 	}
