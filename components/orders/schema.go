@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type GetAllOrders_Req struct {
+	schemas.GetAll_Req
+	schemas.AuthHeader
+}
+
 type CreateOneOrder_Req struct {
 	Body CreateOneOrder_Req_Body
 }
@@ -37,7 +42,7 @@ type CreateManyOrders_Res struct {
 
 type OneOrder_Res struct {
 	schemas.Order_Descriptive
-	Prints []PrintItem_Res `json:"prints"`
+	Prints []PrintItem_Res `json:"prints,omitempty" required:"false"`
 }
 
 type PrintItem_Req struct {
