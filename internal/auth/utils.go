@@ -51,3 +51,14 @@ func CheckPermissions(authorized_list, user_permissions []string, op OPEnum) boo
 
 	return isAuthorized
 }
+
+func CheckAdminstration(user_permissions []string, op OPEnum) bool {
+	authorized_list := []string{
+		CreatePermission(database.RoleEnum_Management, OPEnum_Read),
+		CreatePermission(database.RoleEnum_DBA, OPEnum_Read),
+		CreatePermission(database.RoleEnum_Analytics, OPEnum_Read),
+	}
+
+	is_adminstrator := CheckPermissions(authorized_list, user_permissions, op)
+	return is_adminstrator
+}

@@ -20,18 +20,14 @@ func GetAllOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schema
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
-	}
+
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
@@ -117,11 +113,7 @@ func GetOrderByID_Handler(ctx context.Context, input *GetOrderByID_Req) (*GetOrd
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
-	}
+
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
@@ -145,8 +137,8 @@ func GetOrderByID_Handler(ctx context.Context, input *GetOrderByID_Req) (*GetOrd
 
 	user_claim := claims["user"].(map[string]interface{})
 	user_id := user_claim["id"].(string)
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		if order_model.UserID == nil {
 			return nil, huma.Error401Unauthorized("Not Authorizaed")
 		}

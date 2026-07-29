@@ -23,18 +23,13 @@ func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
-	}
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
@@ -119,19 +114,14 @@ func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUs
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
-	}
 
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
@@ -321,19 +311,14 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
-	}
 
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
@@ -379,19 +364,14 @@ func BanUserByID_Handler(ctx context.Context, input *BanUserByID_Req) (*schemas.
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
-	}
 
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
@@ -454,19 +434,14 @@ func DeleteUserByID_Handler(ctx context.Context, input *DeleteUserByID_Req) (*sc
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Write),
-		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Write),
-	}
 
 	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
-	if is_authorized == false {
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
