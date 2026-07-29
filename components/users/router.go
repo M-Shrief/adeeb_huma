@@ -38,30 +38,26 @@ func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	list, err := gorm.G[database.User](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "username"},
-				{Name: "roles"},
-			},
-		}).
+	var results []UserWithTotalCount
+
+	err = database.Conn.Table("users").
+		Select("*, COUNT(*) OVER() as total_count").
 		Limit(input.Limit).
 		Offset(input.Offset).
-		Find(ctx)
+		Find(&results).Error
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in GET /users.")
 		return nil, huma.Error404NotFound("Unknown error while getting users")
 	}
 
-	users := DBModels_To_ResSchemas(list)
+	users, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.User_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.User_Descriptive]{
-			Data:   users,
-			Limit:  input.Limit,
-			Offset: input.Offset,
+			Data:       users,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
 		},
 		Status: http.StatusOK,
 	}

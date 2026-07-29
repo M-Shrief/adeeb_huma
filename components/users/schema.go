@@ -102,3 +102,27 @@ func DBModels_To_ResSchemas(user_models []database.User) []schemas.User_Descript
 
 	return users
 }
+
+type UserWithTotalCount struct {
+	database.User
+	TotalCount int64 `json:"total_count"`
+}
+
+func DistillDBModelsWithCount(models_with_count []UserWithTotalCount) ([]schemas.User_Descriptive, int64) {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var users_res []schemas.User_Descriptive
+	var total_count int64
+	for i, model := range models_with_count {
+		var user_res schemas.User_Descriptive
+		user_res.ID = model.ID
+		user_res.Username = model.Username
+		user_res.Roles = model.Roles
+
+		users_res = append(users_res, user_res)
+		if i == 0 {
+			total_count = model.TotalCount
+		}
+	}
+	return users_res, total_count
+}
