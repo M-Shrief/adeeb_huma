@@ -7,6 +7,7 @@ import (
 	"adeeb_huma/internal/utils"
 	"adeeb_huma/schemas"
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -104,6 +105,59 @@ func GetUserOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schem
 			Offset:     input.Offset,
 			TotalCount: total_count,
 		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
+func GetOrderByID_Handler(ctx context.Context, input *GetOrderByID_Req) (*GetOrderByID_Res, error) {
+
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Management, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_DBA, auth.OPEnum_Read),
+		auth.CreatePermission(database.RoleEnum_Analytics, auth.OPEnum_Read),
+	}
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	order_model, err := gorm.G[database.Order](database.Conn).
+		Preload("Prints", func(db gorm.PreloadBuilder) error {
+			db.Select("*")
+			return nil
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Order's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /orders/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request getting Order")
+	}
+
+	user_claim := claims["user"].(map[string]interface{})
+	user_id := user_claim["id"].(string)
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
+	if is_authorized == false {
+		if order_model.UserID == nil {
+			return nil, huma.Error401Unauthorized("Not Authorizaed")
+		}
+		if order_model.UserID.String() != user_id {
+			return nil, huma.Error401Unauthorized("Not Authorizaed")
+		}
+	}
+
+	order_res := DBModel_To_ResSchema(order_model)
+	res := &GetOrderByID_Res{
+		Body:   order_res,
 		Status: http.StatusOK,
 	}
 

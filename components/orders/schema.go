@@ -11,6 +11,16 @@ type GetAllOrders_Req struct {
 	schemas.AuthHeader
 }
 
+type GetOrderByID_Req struct {
+	schemas.AuthHeader
+	schemas.IDPath
+}
+
+type GetOrderByID_Res struct {
+	Body   OneOrder_Res
+	Status int
+}
+
 type CreateOneOrder_Req struct {
 	Body CreateOneOrder_Req_Body
 }
@@ -62,6 +72,18 @@ type PrintItem_Req struct {
 
 type PrintItem_Res struct {
 	schemas.IDField
+	schemas.Print_FontTypeField
+	schemas.Print_FontColorField
+	schemas.Print_OutfitColorField
+	schemas.Print_OutfitTypeField
+	// Relations
+	schemas.ProseQoute_QouteField_Optional
+	schemas.VersesField_Optional
+	schemas.IsCoupletField_Optional
+
+	schemas.PoemIDField_Optional
+	schemas.ChosenVerseIDField_Optional
+	schemas.ProseQouteIDField_Optional
 }
 
 const DeliveryAfter time.Duration = time.Hour * 24 * 7
@@ -78,9 +100,6 @@ func ReqSchema_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
 		DeliverySchedule: &DeliverySchedule,
 		UserID:           order_req.UserID,
 	}
-	// if order_req.UserID != nil {
-	// 	order_model.UserID = *order_req.UserID
-	// }
 
 	for _, print := range order_req.Prints {
 		new_print := database.Print{
@@ -146,6 +165,17 @@ func DBModel_To_ResSchema(order_model database.Order) OneOrder_Res {
 	for _, print_model := range order_model.Prints {
 		var print_res PrintItem_Res
 		print_res.ID = print_model.ID
+		print_res.FontType = print_model.FontType
+		print_res.FontColor = print_model.FontColor
+		print_res.OutfitColor = print_model.OutfitColor
+		print_res.OutfitType = print_model.OutfitType
+		print_res.Qoute = print_model.Qoute
+		print_res.Verses = print_model.Verses
+		print_res.IsCouplet = print_model.IsCouplet
+		print_res.PoemID = print_model.PoemID
+		print_res.ChosenVerseID = print_model.ChosenVerseID
+		print_res.ProseQouteID = print_model.ProseQouteID
+
 		order_res.Prints = append(order_res.Prints, print_res)
 	}
 
