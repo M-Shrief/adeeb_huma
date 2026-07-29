@@ -31,6 +31,15 @@ type CreateOneOrder_Res_Body struct {
 	Prints []PrintItem_Res `json:"prints"`
 }
 
+type CreateManyOrder_Req struct {
+	Body []CreateOneOrder_Req_Body
+}
+
+type CreateManyOrders_Res struct {
+	Body   schemas.CreateMany_Res_Body[CreateOneOrder_Res_Body]
+	Status int
+}
+
 type PrintItem_Req struct {
 	schemas.Print_FontTypeField
 	schemas.Print_FontColorField
@@ -136,4 +145,15 @@ func DBModel_To_ResSchema(order_model database.Order) CreateOneOrder_Res_Body {
 	}
 
 	return order_res
+}
+
+func DBModels_To_ResSchemas(order_models []database.Order) []CreateOneOrder_Res_Body {
+	var orders_res []CreateOneOrder_Res_Body
+
+	for _, order_model := range order_models {
+		order_res := DBModel_To_ResSchema(order_model)
+		orders_res = append(orders_res, order_res)
+	}
+
+	return orders_res
 }

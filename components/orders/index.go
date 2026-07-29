@@ -20,4 +20,17 @@ func RegisterAPI(api huma.API) {
 		},
 		CreateOneOrder_Handler,
 	)
+
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/orders/many",
+			Summary:       "Create Many",
+			Description:   "Create Many Order",
+			Tags:          []string{"Orders"},
+			DefaultStatus: http.StatusCreated,
+		},
+		CreateManyOrder_Handler,
+	)
 }
