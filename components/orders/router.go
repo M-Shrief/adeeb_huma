@@ -61,6 +61,55 @@ func GetAllOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schema
 	return res, nil
 }
 
+func GetUserOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schemas.GetAll_Res[schemas.Order_Descriptive], error) {
+
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+	authorized_list := []string{
+		auth.CreatePermission(database.RoleEnum_Normal, auth.OPEnum_Read),
+	}
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
+	if is_authorized == false {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_claim := claims["user"].(map[string]interface{})
+	user_id := user_claim["id"].(string)
+
+	var results []OrderWithTotalCount
+	err = database.Conn.Table("orders").
+		Select("*, COUNT(*) OVER() as total_count").
+		Limit(input.Limit).
+		Offset(input.Offset).
+		Where("user_id = ?", user_id).
+		Find(&results).Error
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in GET /orders.")
+		return nil, huma.Error404NotFound("Unknown error while getting orders")
+	}
+
+	orders, total_count := DistillDBModelsWithCount(results)
+	res := &schemas.GetAll_Res[schemas.Order_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.Order_Descriptive]{
+			Data:       orders,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
+		},
+		Status: http.StatusOK,
+	}
+
+	return res, nil
+}
+
 func CreateOneOrder_Handler(ctx context.Context, input *CreateOneOrder_Req) (*CreateOneOrder_Res, error) {
 	data := ReqSchema_To_DBModel(input.Body)
 
