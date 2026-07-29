@@ -91,6 +91,34 @@ func DBModels_To_ResSchemas(prose_qoute_models []database.ProseQoute) []schemas.
 	return prose_qoutes
 }
 
+type ProseQouteWithTotalCount struct {
+	database.ProseQoute
+	TotalCount int64 `json:"total_count"`
+}
+
+func DistillDBModelsWithCount(models_with_count []ProseQouteWithTotalCount) ([]schemas.ProseQoute_Descriptive, int64) {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var prose_qoutes_res []schemas.ProseQoute_Descriptive
+	var total_count int64
+	for i, model := range models_with_count {
+		var prose_qoute_res schemas.ProseQoute_Descriptive
+		prose_qoute_res.ID = model.ID
+		prose_qoute_res.Qoute = model.Qoute
+		prose_qoute_res.Source = model.Source
+		prose_qoute_res.Tags = model.Tags
+		prose_qoute_res.Reviewed = model.Reviewed
+
+		prose_qoute_res.AdeebID = model.AdeebID
+
+		prose_qoutes_res = append(prose_qoutes_res, prose_qoute_res)
+		if i == 0 {
+			total_count = model.TotalCount
+		}
+	}
+	return prose_qoutes_res, total_count
+}
+
 func ReqSchema_To_DBModel(prose_qoute_req CreateOneProseQoute_Req_Body) database.ProseQoute {
 	prose_qoute_model := database.ProseQoute{
 		Qoute:    prose_qoute_req.Qoute,
