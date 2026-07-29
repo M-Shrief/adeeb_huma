@@ -14,33 +14,26 @@ import (
 )
 
 func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.Adeeb_Descriptive], error) {
+	var results []AdeebWithTotalCount
 
-	list, err := gorm.G[database.Adeeb](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "name"},
-				{Name: "bio"},
-				{Name: "time_period"},
-				{Name: "reviewed"},
-			},
-		}).
+	err := database.Conn.Table("adeebs").
+		Select("*, COUNT(*) OVER() as total_count").
 		Limit(input.Limit).
 		Offset(input.Offset).
-		Find(ctx)
+		Find(&results).Error
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in GET /adeebs")
 		return nil, huma.Error400BadRequest("Uknown error getting adeebs")
 	}
 
-	adeebs := DBModels_To_ResSchemas(list)
+	adeebs, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.Adeeb_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Adeeb_Descriptive]{
-			Data:   adeebs,
-			Limit:  input.Limit,
-			Offset: input.Offset,
+			Data:       adeebs,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
 		},
 		Status: http.StatusOK,
 	}

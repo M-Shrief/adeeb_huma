@@ -20,9 +20,10 @@ type GetAll_Res[T any] struct {
 }
 
 type GetAll_Res_Body[T any] struct {
-	Data   []T `json:"data"`
-	Limit  int `json:"limit"`
-	Offset int `json:"offset"`
+	Data       []T   `json:"data"`
+	Limit      int   `json:"limit"`
+	Offset     int   `json:"offset"`
+	TotalCount int64 `json:"total_count"`
 }
 
 type CreateMany_Res_Body[T any] struct {

@@ -79,6 +79,32 @@ func DBModels_To_ResSchemas(adeeb_models []database.Adeeb) []schemas.Adeeb_Descr
 	return adeebs
 }
 
+type AdeebWithTotalCount struct {
+	database.Adeeb
+	TotalCount int64 `json:"total_count"`
+}
+
+func DistillDBModelsWithCount(models_with_count []AdeebWithTotalCount) ([]schemas.Adeeb_Descriptive, int64) {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var adeebs_res []schemas.Adeeb_Descriptive
+	var total_count int64
+	for i, model := range models_with_count {
+		var adeeb_res schemas.Adeeb_Descriptive
+		adeeb_res.ID = model.ID
+		adeeb_res.Name = model.Name
+		adeeb_res.Bio = *model.Bio
+		adeeb_res.TimePeriod = model.TimePeriod
+		adeeb_res.Reviewed = model.Reviewed
+
+		adeebs_res = append(adeebs_res, adeeb_res)
+		if i == 0 {
+			total_count = model.TotalCount
+		}
+	}
+	return adeebs_res, total_count
+}
+
 func ReqSchema_To_DBModel(adeeb_req CreateOneAdeeb_Req_Body) database.Adeeb {
 	adeeb_model := database.Adeeb{
 		Name:       adeeb_req.Name,
