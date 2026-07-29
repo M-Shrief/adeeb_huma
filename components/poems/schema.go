@@ -66,7 +66,7 @@ type DeletePoem_Req struct {
 	schemas.IDPath
 }
 
-func DBModel_To_DescriptiveSchema(poem_model database.Poem) schemas.Poem_Descriptive {
+func DBModel_To_ResSchema(poem_model database.Poem) schemas.Poem_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
 	var poem_res schemas.Poem_Descriptive
@@ -81,18 +81,18 @@ func DBModel_To_DescriptiveSchema(poem_model database.Poem) schemas.Poem_Descrip
 	return poem_res
 }
 
-func DBModels_To_DescriptiveSchemas(poem_models []database.Poem) []schemas.Poem_Descriptive {
+func DBModels_To_ResSchemas(poem_models []database.Poem) []schemas.Poem_Descriptive {
 	var poems []schemas.Poem_Descriptive
 
 	for _, adeeb_model := range poem_models {
-		poem_res := DBModel_To_DescriptiveSchema(adeeb_model)
+		poem_res := DBModel_To_ResSchema(adeeb_model)
 		poems = append(poems, poem_res)
 	}
 
 	return poems
 }
 
-func ReqModel_To_DBModel(poem_req CreateOnePoem_Req_Body) database.Poem {
+func ReqSchema_To_DBModel(poem_req CreateOnePoem_Req_Body) database.Poem {
 	poem_model := database.Poem{
 		Intro:     poem_req.Intro,
 		Verses:    poem_req.Verses,
@@ -105,11 +105,11 @@ func ReqModel_To_DBModel(poem_req CreateOnePoem_Req_Body) database.Poem {
 	return poem_model
 }
 
-func ReqModels_To_DBModels(poems_req []CreateOnePoem_Req_Body) []database.Poem {
+func ReqSchemas_To_DBModels(poems_req []CreateOnePoem_Req_Body) []database.Poem {
 	var poem_models []database.Poem
 
 	for _, poem_req := range poems_req {
-		poem_model := ReqModel_To_DBModel(poem_req)
+		poem_model := ReqSchema_To_DBModel(poem_req)
 		poem_models = append(poem_models, poem_model)
 	}
 

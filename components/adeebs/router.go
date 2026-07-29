@@ -35,7 +35,7 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 		return nil, huma.Error400BadRequest("Uknown error getting adeebs")
 	}
 
-	adeebs := DBModels_To_DescriptiveSchemas(list)
+	adeebs := DBModels_To_ResSchemas(list)
 	res := &schemas.GetAll_Res[schemas.Adeeb_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Adeeb_Descriptive]{
 			Data:   adeebs,
@@ -72,7 +72,7 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
 	}
 
-	adeeb_res := DBModel_To_DescriptiveSchema(adeeb_model)
+	adeeb_res := DBModel_To_ResSchema(adeeb_model)
 	res := &GetOneAdeeb_Res{
 		Body:   adeeb_res,
 		Status: http.StatusOK,
@@ -82,7 +82,7 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 }
 
 func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*CreateOneAdeeb_Res, error) {
-	data := ReqModel_To_DBModel(input.Body)
+	data := ReqSchema_To_DBModel(input.Body)
 
 	err := gorm.G[database.Adeeb](
 		database.Conn,
@@ -107,7 +107,7 @@ func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*Cr
 		return nil, huma.Error400BadRequest("Bad Request creating Adeeb.")
 	}
 
-	adeeb := DBModel_To_DescriptiveSchema(data)
+	adeeb := DBModel_To_ResSchema(data)
 	return &CreateOneAdeeb_Res{Body: adeeb, Status: http.StatusCreated}, nil
 
 }
@@ -117,7 +117,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 	var CreatedItems []schemas.Adeeb_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
-	new_data := ReqModels_To_DBModels(input.Body)
+	new_data := ReqSchemas_To_DBModels(input.Body)
 	for i, item := range new_data {
 		err := gorm.G[database.Adeeb](
 			database.Conn,
@@ -142,7 +142,7 @@ func CreateManyAdeeb_Handler(ctx context.Context, input *CreateManyAdeebs_Req) (
 			continue
 		}
 
-		new_adeeb := DBModel_To_DescriptiveSchema(item)
+		new_adeeb := DBModel_To_ResSchema(item)
 		CreatedItems = append(CreatedItems, new_adeeb)
 
 	}

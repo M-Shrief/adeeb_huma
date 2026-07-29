@@ -56,7 +56,7 @@ func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.
 		return nil, huma.Error404NotFound("Unknown error while getting users")
 	}
 
-	users := DBModels_To_DescriptiveSchemas(list)
+	users := DBModels_To_ResSchemas(list)
 	res := &schemas.GetAll_Res[schemas.User_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.User_Descriptive]{
 			Data:   users,
@@ -108,7 +108,7 @@ func GetCurrentUser_Handler(ctx context.Context, input *GetCurrentUser_Req) (*Ge
 		return nil, huma.Error404NotFound("Unknown error while getting current user")
 	}
 
-	user := DBModel_To_DescriptiveSchema(user_model)
+	user := DBModel_To_ResSchema(user_model)
 	res := &GetOneUser_Res{
 		Body:   user,
 		Status: http.StatusOK,
@@ -156,7 +156,7 @@ func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUs
 		return nil, huma.Error404NotFound("Unknown error while users by ID")
 	}
 
-	user := DBModel_To_DescriptiveSchema(user_model)
+	user := DBModel_To_ResSchema(user_model)
 	res := &GetOneUser_Res{
 		Body:   user,
 		Status: http.StatusOK,
@@ -217,7 +217,7 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 	}
 
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{DBModel_To_DescriptiveSchema(user_model), token},
+		Body:   UserAuthorized_Res_Body{DBModel_To_ResSchema(user_model), token},
 		Status: http.StatusCreated,
 	}, nil
 }
@@ -255,7 +255,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 	}
 
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{DBModel_To_DescriptiveSchema(user_model), token},
+		Body:   UserAuthorized_Res_Body{DBModel_To_ResSchema(user_model), token},
 		Status: http.StatusCreated,
 	}, nil
 

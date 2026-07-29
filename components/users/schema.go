@@ -81,7 +81,7 @@ type DeleteUserByID_Req struct {
 	schemas.IDPath
 }
 
-func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descriptive {
+func DBModel_To_ResSchema(user_model database.User) schemas.User_Descriptive {
 	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
 	// So we define the variable and it's type, then assign each field alone.
 	var user_res schemas.User_Descriptive
@@ -92,11 +92,11 @@ func DBModel_To_DescriptiveSchema(user_model database.User) schemas.User_Descrip
 	return user_res
 }
 
-func DBModels_To_DescriptiveSchemas(user_models []database.User) []schemas.User_Descriptive {
+func DBModels_To_ResSchemas(user_models []database.User) []schemas.User_Descriptive {
 	var users []schemas.User_Descriptive
 
 	for _, adeeb_model := range user_models {
-		user_res := DBModel_To_DescriptiveSchema(adeeb_model)
+		user_res := DBModel_To_ResSchema(adeeb_model)
 		users = append(users, user_res)
 	}
 

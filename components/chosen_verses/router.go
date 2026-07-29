@@ -38,7 +38,7 @@ func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) 
 		return nil, huma.Error404NotFound("Unknown error while getting chosen_verses")
 	}
 
-	chosen_verses := DBModels_To_DescriptiveSchemas(list)
+	chosen_verses := DBModels_To_ResSchemas(list)
 	res := &schemas.GetAll_Res[schemas.ChosenVerse_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.ChosenVerse_Descriptive]{
 			Data:   chosen_verses,
@@ -110,7 +110,7 @@ func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req
 }
 
 func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVerse_Req) (*CreateOneChosenVerse_Res, error) {
-	data := ReqModel_To_DBModel(input.Body)
+	data := ReqSchema_To_DBModel(input.Body)
 
 	err := gorm.G[database.ChosenVerse](
 		database.Conn,
@@ -136,7 +136,7 @@ func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVer
 		return nil, huma.Error400BadRequest("Bad Request creating ChosenVerse.")
 	}
 
-	chosen_verse := DBModel_To_DescriptiveSchema(data)
+	chosen_verse := DBModel_To_ResSchema(data)
 	return &CreateOneChosenVerse_Res{Body: chosen_verse, Status: http.StatusCreated}, nil
 }
 
@@ -145,7 +145,7 @@ func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosen
 	var CreatedItems []schemas.ChosenVerse_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
-	new_data := ReqModels_To_DBModels(input.Body)
+	new_data := ReqSchemas_To_DBModels(input.Body)
 	for i, item := range new_data {
 		err := gorm.G[database.ChosenVerse](
 			database.Conn,
@@ -173,7 +173,7 @@ func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosen
 			continue
 		}
 
-		new_chosen_verse := DBModel_To_DescriptiveSchema(item)
+		new_chosen_verse := DBModel_To_ResSchema(item)
 		CreatedItems = append(CreatedItems, new_chosen_verse)
 
 	}

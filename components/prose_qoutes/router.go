@@ -37,7 +37,7 @@ func GetAllProseQoutes_Handler(ctx context.Context, input *schemas.GetAll_Req) (
 		return nil, huma.Error404NotFound("Unknown error while getting prose_qoutes")
 	}
 
-	prose_qoutes := DBModels_To_DescriptiveSchemas(list)
+	prose_qoutes := DBModels_To_ResSchemas(list)
 	res := &schemas.GetAll_Res[schemas.ProseQoute_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.ProseQoute_Descriptive]{
 			Data:   prose_qoutes,
@@ -100,7 +100,7 @@ func GetOneProseQoute_Handler(ctx context.Context, input *GetOneProseQoute_Req) 
 }
 
 func CreateOneProseQoute_Handler(ctx context.Context, input *CreateOneProseQoute_Req) (*CreateOneProseQoute_Res, error) {
-	data := ReqModel_To_DBModel(input.Body)
+	data := ReqSchema_To_DBModel(input.Body)
 
 	err := gorm.G[database.ProseQoute](
 		database.Conn,
@@ -125,7 +125,7 @@ func CreateOneProseQoute_Handler(ctx context.Context, input *CreateOneProseQoute
 		return nil, huma.Error400BadRequest("Bad Request creating ProseQoute.")
 	}
 
-	prose_qoute := DBModel_To_DescriptiveSchema(data)
+	prose_qoute := DBModel_To_ResSchema(data)
 	return &CreateOneProseQoute_Res{Body: prose_qoute, Status: http.StatusCreated}, nil
 }
 
@@ -134,7 +134,7 @@ func CreateManyProseQoutes_Handler(ctx context.Context, input *CreateManyProseQo
 	var CreatedItems []schemas.ProseQoute_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
-	new_data := ReqModels_To_DBModels(input.Body)
+	new_data := ReqSchemas_To_DBModels(input.Body)
 	for i, item := range new_data {
 		err := gorm.G[database.ProseQoute](
 			database.Conn,
@@ -161,7 +161,7 @@ func CreateManyProseQoutes_Handler(ctx context.Context, input *CreateManyProseQo
 			continue
 		}
 
-		new_prose_qoute := DBModel_To_DescriptiveSchema(item)
+		new_prose_qoute := DBModel_To_ResSchema(item)
 		CreatedItems = append(CreatedItems, new_prose_qoute)
 
 	}

@@ -37,7 +37,7 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 		return nil, huma.Error404NotFound("Unknown error while getting poems")
 	}
 
-	poems := DBModels_To_DescriptiveSchemas(list)
+	poems := DBModels_To_ResSchemas(list)
 	res := &schemas.GetAll_Res[schemas.Poem_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.Poem_Descriptive]{
 			Data:   poems,
@@ -112,7 +112,7 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 }
 
 func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*CreateOnePoem_Res, error) {
-	data := ReqModel_To_DBModel(input.Body)
+	data := ReqSchema_To_DBModel(input.Body)
 
 	err := gorm.G[database.Poem](
 		database.Conn,
@@ -137,7 +137,7 @@ func CreateOnePoem_Handler(ctx context.Context, input *CreateOnePoem_Req) (*Crea
 		return nil, huma.Error400BadRequest("Bad Request creating Poem.")
 	}
 
-	poem := DBModel_To_DescriptiveSchema(data)
+	poem := DBModel_To_ResSchema(data)
 	return &CreateOnePoem_Res{Body: poem, Status: http.StatusCreated}, nil
 }
 
@@ -146,7 +146,7 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 	var CreatedItems []schemas.Poem_Descriptive
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
-	new_data := ReqModels_To_DBModels(input.Body)
+	new_data := ReqSchemas_To_DBModels(input.Body)
 	for i, item := range new_data {
 		err := gorm.G[database.Poem](
 			database.Conn,
@@ -173,7 +173,7 @@ func CreateManyPoems_Handler(ctx context.Context, input *CreateManyPoems_Req) (*
 			continue
 		}
 
-		new_poem := DBModel_To_DescriptiveSchema(item)
+		new_poem := DBModel_To_ResSchema(item)
 		CreatedItems = append(CreatedItems, new_poem)
 
 	}
