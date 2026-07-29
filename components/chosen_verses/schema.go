@@ -95,6 +95,35 @@ func DBModels_To_ResSchemas(chosen_verse_models []database.ChosenVerse) []schema
 	return poems
 }
 
+type ChosenVerseWithTotalCount struct {
+	database.ChosenVerse
+	TotalCount int64 `json:"total_count"`
+}
+
+func DistillDBModelsWithCount(models_with_count []ChosenVerseWithTotalCount) ([]schemas.ChosenVerse_Descriptive, int64) {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var chosen_verses_res []schemas.ChosenVerse_Descriptive
+	var total_count int64
+	for i, model := range models_with_count {
+		var chosen_verse_res schemas.ChosenVerse_Descriptive
+		chosen_verse_res.ID = model.ID
+		chosen_verse_res.Verses = model.Verses
+		chosen_verse_res.IsCouplet = model.IsCouplet
+		chosen_verse_res.Tags = model.Tags
+		chosen_verse_res.Reviewed = model.Reviewed
+
+		chosen_verse_res.AdeebID = model.AdeebID
+		chosen_verse_res.PoemID = model.PoemID
+
+		chosen_verses_res = append(chosen_verses_res, chosen_verse_res)
+		if i == 0 {
+			total_count = model.TotalCount
+		}
+	}
+	return chosen_verses_res, total_count
+}
+
 func ReqSchema_To_DBModel(chosen_verse_req CreateOneChosenVerse_Req_Body) database.ChosenVerse {
 	chosen_verse_model := database.ChosenVerse{
 		Verses:    chosen_verse_req.Verses,

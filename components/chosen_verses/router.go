@@ -15,35 +15,25 @@ import (
 
 func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.ChosenVerse_Descriptive], error) {
 
-	list, err := gorm.G[database.ChosenVerse](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "verses"},
-				{Name: "is_couplet"},
-				{Name: "tags"},
-				{Name: "reviewed"},
-
-				{Name: "adeeb_id"},
-				{Name: "poem_id"},
-			},
-		}).
+	var results []ChosenVerseWithTotalCount
+	err := database.Conn.Table("chosen_verses").
+		Select("*, COUNT(*) OVER() as total_count").
 		Limit(input.Limit).
 		Offset(input.Offset).
-		Find(ctx)
+		Find(&results).Error
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in GET /chosen_verses.")
 		return nil, huma.Error404NotFound("Unknown error while getting chosen_verses")
 	}
 
-	chosen_verses := DBModels_To_ResSchemas(list)
+	chosen_verses, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.ChosenVerse_Descriptive]{
 		Body: schemas.GetAll_Res_Body[schemas.ChosenVerse_Descriptive]{
-			Data:   chosen_verses,
-			Limit:  input.Limit,
-			Offset: input.Offset,
+			Data:       chosen_verses,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
 		},
 		Status: http.StatusOK,
 	}
