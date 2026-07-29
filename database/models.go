@@ -103,8 +103,8 @@ type Order struct {
 	DeliverySchedule *time.Time `gorm:"type:timestamp without time zone;not null" json:"delivery_schedule"`
 
 	// Relations
-	UserID uuid.UUID `json:"user_id"`
-	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
+	UserID *uuid.UUID `json:"user_id"`
+	User   *User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
 
 	Prints []Print `gorm:"foreignKey:OrderID;references:ID" json:"prints"`
 }
@@ -124,8 +124,8 @@ type Print struct {
 	OrderID uuid.UUID `json:"order_id" gorm:"not null"`
 	Order   Order     `gorm:"foreignKey:OrderID;references:ID" json:"order"`
 
-	UserID uuid.UUID `json:"user_id"`
-	User   User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
+	UserID *uuid.UUID `json:"user_id"`
+	User   *User      `gorm:"foreignKey:UserID;references:ID" json:"user"`
 
 	// // Only for Analytics
 	PoemID        *uuid.UUID `json:"poem_id,omitempty"`
