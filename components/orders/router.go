@@ -11,7 +11,7 @@ import (
 )
 
 func CreateOneOrder_Handler(ctx context.Context, input *CreateOneOrder_Req) (*CreateOneOrder_Res, error) {
-	data := ReqModel_To_DBModel(input.Body)
+	data := ReqSchema_To_DBModel(input.Body)
 
 	err := gorm.G[database.Order](database.Conn).
 		Create(ctx, &data)
@@ -21,6 +21,6 @@ func CreateOneOrder_Handler(ctx context.Context, input *CreateOneOrder_Req) (*Cr
 		return nil, huma.Error400BadRequest("Bad Request creating Order.")
 	}
 
-	new_order := DBModel_To_DescriptiveSchema(data)
+	new_order := DBModel_To_ResSchema(data)
 	return &CreateOneOrder_Res{Body: new_order, Status: http.StatusCreated}, nil
 }

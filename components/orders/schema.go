@@ -52,7 +52,7 @@ type PrintItem_Res struct {
 
 const DeliveryAfter time.Duration = time.Hour * 24 * 7
 
-func ReqModel_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
+func ReqSchema_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
 	DeliverySchedule := time.Now().UTC().Add(DeliveryAfter)
 	order_model := database.Order{
 		Name:             order_req.Name,
@@ -105,7 +105,19 @@ func ReqModel_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
 
 }
 
-func DBModel_To_DescriptiveSchema(order_model database.Order) CreateOneOrder_Res_Body {
+func ReqSchemas_To_DBModels(orders_req []CreateOneOrder_Req_Body) []database.Order {
+	var order_models []database.Order
+
+	for _, order_req := range orders_req {
+		order_model := ReqSchema_To_DBModel(order_req)
+		order_models = append(order_models, order_model)
+	}
+
+	return order_models
+
+}
+
+func DBModel_To_ResSchema(order_model database.Order) CreateOneOrder_Res_Body {
 	var order_res CreateOneOrder_Res_Body
 	order_res.ID = order_model.ID
 	order_res.Name = order_model.Name
