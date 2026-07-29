@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetAllOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schemas.GetAll_Res[OneOrder_Res], error) {
+func GetAllOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schemas.GetAll_Res[schemas.Order_Descriptive], error) {
 
 	claims, err := auth.VerifyJWT(input.Auth)
 	if err != nil {
@@ -34,31 +34,26 @@ func GetAllOrders_Handler(ctx context.Context, input *GetAllOrders_Req) (*schema
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	list, err := gorm.G[database.Order](
-		database.Conn,
-		// clause.Select{
-		// 	Columns: []clause.Column{},
-		// },
-	).
-		// Preload("Prints", func(db gorm.PreloadBuilder) error {
-		// 	db.Select("id", "order_id")
-		// 	return nil
-		// }).
+	var results []OrderWithTotalCount
+
+	err = database.Conn.Table("orders").
+		Select("*, COUNT(*) OVER() as total_count").
 		Limit(input.Limit).
 		Offset(input.Offset).
-		Find(ctx)
+		Find(&results).Error
 
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in GET /orders.")
 		return nil, huma.Error404NotFound("Unknown error while getting orders")
 	}
 
-	orders := DBModels_To_ResSchemas(list)
-	res := &schemas.GetAll_Res[OneOrder_Res]{
-		Body: schemas.GetAll_Res_Body[OneOrder_Res]{
-			Data:   orders,
-			Limit:  input.Limit,
-			Offset: input.Offset,
+	orders, total_count := DistillDBModelsWithCount(results)
+	res := &schemas.GetAll_Res[schemas.Order_Descriptive]{
+		Body: schemas.GetAll_Res_Body[schemas.Order_Descriptive]{
+			Data:       orders,
+			Limit:      input.Limit,
+			Offset:     input.Offset,
+			TotalCount: total_count,
 		},
 		Status: http.StatusOK,
 	}

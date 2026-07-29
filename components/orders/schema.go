@@ -162,3 +162,34 @@ func DBModels_To_ResSchemas(order_models []database.Order) []OneOrder_Res {
 
 	return orders_res
 }
+
+type OrderWithTotalCount struct {
+	database.Order
+	TotalCount int64 `json:"total_count"`
+}
+
+func DistillDBModelsWithCount(models_with_count []OrderWithTotalCount) ([]schemas.Order_Descriptive, int64) {
+	// Because we embed structs we can't assign values to fields directly without a lot of boilerplate.
+	// So we define the variable and it's type, then assign each field alone.
+	var orders_res []schemas.Order_Descriptive
+	var total_count int64
+	for i, model := range models_with_count {
+		var order_res schemas.Order_Descriptive
+		order_res.ID = model.ID
+		order_res.Name = model.Name
+		order_res.Phone = model.Phone
+		order_res.Address = model.Address
+		order_res.Reviewed = model.Reviewed
+		order_res.IsUpdateable = model.IsUpdateable
+		order_res.Status = model.Status
+		order_res.DeliverySchedule = model.DeliverySchedule
+
+		order_res.UserID = model.UserID
+
+		orders_res = append(orders_res, order_res)
+		if i == 0 {
+			total_count = model.TotalCount
+		}
+	}
+	return orders_res, total_count
+}
