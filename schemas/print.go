@@ -72,8 +72,8 @@ type Print_OutfitColorField_Optional struct {
 }
 
 type Print_OutfitTypeField struct {
-	OutfitType database.OutfitTypeEnum `json:"status" enum:"تيشيرت - لياقة 7,تيشيرت - نص لياقة ,تشيرت - لياقة بولو,جاكيت,سويت شيرت,بلوفر" doc:"Print's outfit type"`
+	OutfitType database.OutfitTypeEnum `json:"outfit_type" enum:"تيشيرت - لياقة 7,تيشيرت - نص لياقة ,تشيرت - لياقة بولو,جاكيت,سويت شيرت,بلوفر" doc:"Print's outfit type"`
 }
 type Print_OutfitTypeField_Optional struct {
-	OutfitType *database.OutfitTypeEnum `json:"status" enum:"تيشيرت - لياقة 7,تيشيرت - نص لياقة ,تشيرت - لياقة بولو,جاكيت,سويت شيرت,بلوفر" doc:"Print's outfit type" required:"false"`
+	OutfitType *database.OutfitTypeEnum `json:"outfit_type" enum:"تيشيرت - لياقة 7,تيشيرت - نص لياقة ,تشيرت - لياقة بولو,جاكيت,سويت شيرت,بلوفر" doc:"Print's outfit type" required:"false"`
 }
