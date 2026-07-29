@@ -27,7 +27,7 @@ func CreateOneOrder_Handler(ctx context.Context, input *CreateOneOrder_Req) (*Cr
 }
 
 func CreateManyOrder_Handler(ctx context.Context, input *CreateManyOrder_Req) (*CreateManyOrders_Res, error) {
-	var CreatedItems []CreateOneOrder_Res_Body
+	var CreatedItems []OneOrder_Res
 	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
 
 	data := ReqSchemas_To_DBModels(input.Body)
@@ -46,7 +46,7 @@ func CreateManyOrder_Handler(ctx context.Context, input *CreateManyOrder_Req) (*
 	}
 
 	return &CreateManyOrders_Res{
-		Body: schemas.CreateMany_Res_Body[CreateOneOrder_Res_Body]{
+		Body: schemas.CreateMany_Res_Body[OneOrder_Res]{
 			CreatedItems: CreatedItems,
 			SuccessCount: len(CreatedItems),
 			InvalidItems: InvalidItems,

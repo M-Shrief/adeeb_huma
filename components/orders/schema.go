@@ -22,13 +22,8 @@ type CreateOneOrder_Req_Body struct {
 }
 
 type CreateOneOrder_Res struct {
-	Body   CreateOneOrder_Res_Body
+	Body   OneOrder_Res
 	Status int
-}
-
-type CreateOneOrder_Res_Body struct {
-	schemas.Order_Descriptive
-	Prints []PrintItem_Res `json:"prints"`
 }
 
 type CreateManyOrder_Req struct {
@@ -36,8 +31,13 @@ type CreateManyOrder_Req struct {
 }
 
 type CreateManyOrders_Res struct {
-	Body   schemas.CreateMany_Res_Body[CreateOneOrder_Res_Body]
+	Body   schemas.CreateMany_Res_Body[OneOrder_Res]
 	Status int
+}
+
+type OneOrder_Res struct {
+	schemas.Order_Descriptive
+	Prints []PrintItem_Res `json:"prints"`
 }
 
 type PrintItem_Req struct {
@@ -126,8 +126,8 @@ func ReqSchemas_To_DBModels(orders_req []CreateOneOrder_Req_Body) []database.Ord
 
 }
 
-func DBModel_To_ResSchema(order_model database.Order) CreateOneOrder_Res_Body {
-	var order_res CreateOneOrder_Res_Body
+func DBModel_To_ResSchema(order_model database.Order) OneOrder_Res {
+	var order_res OneOrder_Res
 	order_res.ID = order_model.ID
 	order_res.Name = order_model.Name
 	order_res.Phone = order_model.Phone
@@ -147,8 +147,8 @@ func DBModel_To_ResSchema(order_model database.Order) CreateOneOrder_Res_Body {
 	return order_res
 }
 
-func DBModels_To_ResSchemas(order_models []database.Order) []CreateOneOrder_Res_Body {
-	var orders_res []CreateOneOrder_Res_Body
+func DBModels_To_ResSchemas(order_models []database.Order) []OneOrder_Res {
+	var orders_res []OneOrder_Res
 
 	for _, order_model := range order_models {
 		order_res := DBModel_To_ResSchema(order_model)
