@@ -122,6 +122,11 @@ type PrintItem_Req struct {
 	schemas.ProseQouteIDField_Optional
 }
 
+type DeleteOrder_Req struct {
+	schemas.IDPath
+	schemas.AuthHeader
+}
+
 type PrintItem_Res struct {
 	schemas.IDField
 	schemas.Print_FontTypeField

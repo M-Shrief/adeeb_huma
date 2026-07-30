@@ -422,3 +422,54 @@ func UpdatePrint_Handler(ctx context.Context, input *UpdatePrint_Req) (*schemas.
 	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
 
 }
+
+func DeleteOrder_Handler(ctx context.Context, input *DeleteOrder_Req) (*schemas.Delete_Res, error) {
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	order_model, err := gorm.G[database.Order](database.Conn).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Order's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in POST /orders/{id}/prints.")
+		return nil, huma.Error400BadRequest("Bad Request getting Order")
+	}
+
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
+		if auth.CheckOwnership(order_model.UserID, claims) == false {
+			return nil, huma.Error401Unauthorized("Not Authorizaed")
+		}
+	}
+
+	_, err = gorm.G[database.Print](database.Conn).
+		Where("order_id = ?", input.ID).
+		Delete(ctx)
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown error deleting order in DELETE /orders/{id}")
+		return nil, huma.Error400BadRequest("Bad Request deleting order.")
+	}
+
+	_, err = gorm.G[database.Order](database.Conn).
+		Where("id = ?", input.ID).
+		Delete(ctx)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown error deleting order in DELETE /orders/{id}")
+		return nil, huma.Error400BadRequest("Bad Request deleting order.")
+	}
+
+	return &schemas.Delete_Res{Status: http.StatusNoContent}, nil
+
+}
