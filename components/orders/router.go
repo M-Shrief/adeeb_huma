@@ -341,3 +341,84 @@ func UpdateOrder_Handler(ctx context.Context, input *UpdateOrder_Req) (*schemas.
 	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
 
 }
+
+func UpdatePrint_Handler(ctx context.Context, input *UpdatePrint_Req) (*schemas.Update_Res, error) {
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	order_model, err := gorm.G[database.Order](database.Conn).
+		Where("id = ?", input.OrderID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Order's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in POST /orders/{id}/prints.")
+		return nil, huma.Error400BadRequest("Bad Request getting Order")
+	}
+
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
+		if auth.CheckOwnership(order_model.UserID, claims) == false {
+			return nil, huma.Error401Unauthorized("Not Authorizaed")
+		}
+	}
+
+	print_model, err := gorm.G[database.Print](database.Conn).
+		Where("id = ? AND order_id = ?", input.PrintID, input.OrderID).
+		First(ctx)
+
+	if input.Body.FontType != nil {
+		print_model.FontType = *input.Body.FontType
+	}
+	if input.Body.FontColor != nil {
+		print_model.FontColor = *input.Body.FontColor
+	}
+	if input.Body.OutfitType != nil {
+		print_model.OutfitType = *input.Body.OutfitType
+	}
+	if input.Body.OutfitColor != nil {
+		print_model.OutfitColor = *input.Body.OutfitColor
+	}
+	if input.Body.FontColor != nil {
+		print_model.FontColor = *input.Body.FontColor
+	}
+	if input.Body.Qoute != nil {
+		print_model.Qoute = input.Body.Qoute
+	}
+	if input.Body.Verses != nil {
+		print_model.Verses = input.Body.Verses
+	}
+	if input.Body.IsCouplet != nil {
+		print_model.IsCouplet = input.Body.IsCouplet
+	}
+	if input.Body.PoemID != nil {
+		print_model.PoemID = input.Body.PoemID
+	}
+	if input.Body.ChosenVerseID != nil {
+		print_model.ChosenVerseID = input.Body.ChosenVerseID
+	}
+	if input.Body.ProseQouteID != nil {
+		print_model.ProseQouteID = input.Body.ProseQouteID
+	}
+
+	err = database.Conn.Save(&print_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown error updating print in PUt /orders/{order_id}/prints/{print_id}")
+		return nil, huma.Error400BadRequest("Bad Request updating print.")
+	}
+
+	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
+
+}

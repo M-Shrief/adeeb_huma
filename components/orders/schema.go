@@ -85,6 +85,28 @@ type UpdateOrder_Req_Body struct {
 	schemas.UserIDField_Optional
 }
 
+type UpdatePrint_Req struct {
+	Body    UpdatePrint_Req_Body
+	OrderID uuid.UUID `path:"order_id"`
+	PrintID uuid.UUID `path:"print_id"`
+	schemas.AuthHeader
+}
+
+type UpdatePrint_Req_Body struct {
+	schemas.Print_FontTypeField_Optional
+	schemas.Print_FontColorField_Optional
+	schemas.Print_OutfitColorField_Optional
+	schemas.Print_OutfitTypeField_Optional
+
+	schemas.ProseQoute_QouteField_Optional
+	schemas.VersesField_Optional
+	schemas.IsCoupletField_Optional
+
+	schemas.PoemIDField_Optional
+	schemas.ChosenVerseIDField_Optional
+	schemas.ProseQouteIDField_Optional
+}
+
 type PrintItem_Req struct {
 	schemas.Print_FontTypeField
 	schemas.Print_FontColorField
