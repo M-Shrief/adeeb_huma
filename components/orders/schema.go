@@ -127,6 +127,12 @@ type DeleteOrder_Req struct {
 	schemas.AuthHeader
 }
 
+type DeletePrint_Req struct {
+	OrderID uuid.UUID `path:"order_id"`
+	PrintID uuid.UUID `path:"print_id"`
+	schemas.AuthHeader
+}
+
 type PrintItem_Res struct {
 	schemas.IDField
 	schemas.Print_FontTypeField

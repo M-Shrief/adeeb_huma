@@ -125,4 +125,17 @@ func RegisterAPI(api huma.API) {
 		DeleteOrder_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodDelete,
+			Path:          "/api/v1/orders/{order_id}/prints/{print_id}",
+			Summary:       "Delete Print",
+			Description:   "Delete One Print",
+			Tags:          []string{"Orders"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		DeletePrint_Handler,
+	)
+
 }
