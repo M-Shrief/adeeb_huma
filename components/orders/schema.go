@@ -4,6 +4,8 @@ import (
 	"adeeb_huma/database"
 	"adeeb_huma/schemas"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type GetAllOrders_Req struct {
@@ -102,35 +104,7 @@ func ReqSchema_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
 	}
 
 	for _, print := range order_req.Prints {
-		new_print := database.Print{
-			FontType:    print.FontType,
-			FontColor:   print.FontColor,
-			OutfitType:  print.OutfitType,
-			OutfitColor: print.OutfitColor,
-		}
-		if print.Qoute != nil {
-			new_print.Qoute = print.Qoute
-		}
-		if print.Verses != nil {
-			new_print.Verses = print.Verses
-		}
-		if print.IsCouplet != nil {
-			new_print.IsCouplet = print.IsCouplet
-		}
-		if print.PoemID != nil {
-			new_print.PoemID = print.PoemID
-		}
-		if print.ChosenVerseID != nil {
-			new_print.ChosenVerseID = print.ChosenVerseID
-		}
-		if print.ProseQouteID != nil {
-			new_print.ProseQouteID = print.ProseQouteID
-		}
-
-		if order_req.UserID != nil {
-			new_print.UserID = order_req.UserID
-		}
-
+		new_print := NewPrintModel(print, order_req.UserID)
 		order_model.Prints = append(order_model.Prints, new_print)
 	}
 
@@ -163,19 +137,7 @@ func DBModel_To_ResSchema(order_model database.Order) OneOrder_Res {
 
 	order_res.UserID = order_model.UserID
 	for _, print_model := range order_model.Prints {
-		var print_res PrintItem_Res
-		print_res.ID = print_model.ID
-		print_res.FontType = print_model.FontType
-		print_res.FontColor = print_model.FontColor
-		print_res.OutfitColor = print_model.OutfitColor
-		print_res.OutfitType = print_model.OutfitType
-		print_res.Qoute = print_model.Qoute
-		print_res.Verses = print_model.Verses
-		print_res.IsCouplet = print_model.IsCouplet
-		print_res.PoemID = print_model.PoemID
-		print_res.ChosenVerseID = print_model.ChosenVerseID
-		print_res.ProseQouteID = print_model.ProseQouteID
-
+		print_res := NewPrintRes(print_model)
 		order_res.Prints = append(order_res.Prints, print_res)
 	}
 
@@ -222,4 +184,38 @@ func DistillDBModelsWithCount(models_with_count []OrderWithTotalCount) ([]schema
 		}
 	}
 	return orders_res, total_count
+}
+
+func NewPrintModel(print_req PrintItem_Req, user_id *uuid.UUID) database.Print {
+	new_print := database.Print{
+		FontType:      print_req.FontType,
+		FontColor:     print_req.FontColor,
+		OutfitType:    print_req.OutfitType,
+		OutfitColor:   print_req.OutfitColor,
+		Qoute:         print_req.Qoute,
+		Verses:        print_req.Verses,
+		IsCouplet:     print_req.IsCouplet,
+		PoemID:        print_req.PoemID,
+		ChosenVerseID: print_req.ChosenVerseID,
+		ProseQouteID:  print_req.ProseQouteID,
+		UserID:        user_id,
+	}
+	return new_print
+}
+
+func NewPrintRes(print_model database.Print) PrintItem_Res {
+	var print_res PrintItem_Res
+	print_res.ID = print_model.ID
+	print_res.FontType = print_model.FontType
+	print_res.FontColor = print_model.FontColor
+	print_res.OutfitColor = print_model.OutfitColor
+	print_res.OutfitType = print_model.OutfitType
+	print_res.Qoute = print_model.Qoute
+	print_res.Verses = print_model.Verses
+	print_res.IsCouplet = print_model.IsCouplet
+	print_res.PoemID = print_model.PoemID
+	print_res.ChosenVerseID = print_model.ChosenVerseID
+	print_res.ProseQouteID = print_model.ProseQouteID
+
+	return print_res
 }
