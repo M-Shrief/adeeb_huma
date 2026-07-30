@@ -57,6 +57,17 @@ type OneOrder_Res struct {
 	Prints []PrintItem_Res `json:"prints,omitempty" required:"false"`
 }
 
+type AddPrint_Req struct {
+	Body PrintItem_Req
+	schemas.IDPath
+	schemas.AuthHeader
+}
+
+type AddPrint_Res struct {
+	Body   PrintItem_Res
+	Status int
+}
+
 type PrintItem_Req struct {
 	schemas.Print_FontTypeField
 	schemas.Print_FontColorField
