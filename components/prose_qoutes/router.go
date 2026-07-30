@@ -198,7 +198,14 @@ func UpdateProseQoute_Handler(ctx context.Context, input *UpdateProseQoute_Req) 
 		prose_qoute_model.AdeebID = *input.Body.AdeebID
 	}
 
-	database.Conn.Save(&prose_qoute_model)
+	err = database.Conn.Save(&prose_qoute_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /prose_qoutes/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request updating prose_qoute")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,

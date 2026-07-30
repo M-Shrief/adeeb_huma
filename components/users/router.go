@@ -297,7 +297,11 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 		user_model.Roles = roles
 	}
 
-	database.Conn.Save(&user_model)
+	err = database.Conn.Save(&user_model).Error
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
+		return nil, huma.Error400BadRequest("Bad Request updating current User")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
@@ -350,7 +354,11 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 		user_model.Roles = roles
 	}
 
-	database.Conn.Save(&user_model)
+	err = database.Conn.Save(&user_model).Error
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request updating User by id")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,

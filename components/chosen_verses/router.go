@@ -211,7 +211,14 @@ func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req
 		chosen_verse_model.PoemID = *input.Body.PoemID
 	}
 
-	_ = database.Conn.Save(&chosen_verse_model)
+	err = database.Conn.Save(&chosen_verse_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /chosen_verses/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request updating chosen_verse")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,

@@ -179,7 +179,14 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 		adeeb_model.Reviewed = *input.Body.Reviewed
 	}
 
-	database.Conn.Save(&adeeb_model)
+	err = database.Conn.Save(&adeeb_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /adeebs/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request updating adeeb")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,

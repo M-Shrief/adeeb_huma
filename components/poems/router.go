@@ -209,7 +209,14 @@ func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Up
 		poem_model.AdeebID = *input.Body.AdeebID
 	}
 
-	_ = database.Conn.Save(&poem_model)
+	err = database.Conn.Save(&poem_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in PUT /poems/{id}.")
+		return nil, huma.Error400BadRequest("Bad Request updating poem")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
