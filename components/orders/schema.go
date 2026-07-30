@@ -68,6 +68,23 @@ type AddPrint_Res struct {
 	Status int
 }
 
+type UpdateOrder_Req struct {
+	Body UpdateOrder_Req_Body
+	schemas.IDPath
+	schemas.AuthHeader
+}
+type UpdateOrder_Req_Body struct {
+	schemas.Order_NameField_Optional
+	schemas.Order_PhoneField_Optional
+	schemas.Order_AddressField_Optional
+	schemas.Order_DeliveryScheduleField_Optional
+	schemas.ReviewedField_Optional
+	schemas.Order_IsUpdateableField_Optional
+	schemas.Order_StatusField_Optional
+	// Rlations
+	schemas.UserIDField_Optional
+}
+
 type PrintItem_Req struct {
 	schemas.Print_FontTypeField
 	schemas.Print_FontColorField

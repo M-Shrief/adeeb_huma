@@ -241,3 +241,103 @@ func AddPrint_Handler(ctx context.Context, input *AddPrint_Req) (*AddPrint_Res, 
 	return &AddPrint_Res{Body: NewPrintRes(print_model), Status: http.StatusCreated}, nil
 
 }
+
+func UpdateOrder_Handler(ctx context.Context, input *UpdateOrder_Req) (*schemas.Update_Res, error) {
+	claims, err := auth.VerifyJWT(input.Auth)
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
+	if err != nil {
+		return nil, huma.Error401Unauthorized("Not Authorizaed")
+	}
+
+	order_model, err := gorm.G[database.Order](database.Conn).
+		Preload("Prints", func(db gorm.PreloadBuilder) error {
+			db.Select("*")
+			return nil
+		}).
+		Where("id = ?", input.ID).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, huma.Error404NotFound("Order's not found")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown errror in POST /orders/{id}/prints.")
+		return nil, huma.Error400BadRequest("Bad Request getting Order")
+	}
+
+	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
+	if is_adminstrator == false {
+		if auth.CheckOwnership(order_model.UserID, claims) == false {
+			return nil, huma.Error401Unauthorized("Not Authorizaed")
+		}
+		// Make sure the user can't update interanl values like: is_updateable, is_completed
+		// we assign them to None, as we can exclude them later with model_dump(exclude_none=True)
+		input.Body.IsUpdateable = nil
+		input.Body.Status = nil
+		input.Body.UserID = nil
+	}
+
+	// Ensuring Data Integrity: we check order.status & order.is_updateable,
+
+	// but because go don't allow us to directly compare them to values without pointers
+	// and it raises error if we made a point to nil, so we check them for nil
+	// and if it's nil, then we assign them for order's existing values
+	if input.Body.IsUpdateable == nil {
+		input.Body.IsUpdateable = &order_model.IsUpdateable
+	}
+	if input.Body.Status == nil {
+		input.Body.Status = &order_model.Status
+	}
+
+	// If the order is aborted or marked as completed, then we make sure that is_updateable is False
+	if *input.Body.Status == database.StatusEnum_Aborted || *input.Body.Status == database.StatusEnum_Completed {
+		*input.Body.IsUpdateable = false
+	} else if *input.Body.Status == database.StatusEnum_InProgress {
+		*input.Body.IsUpdateable = true
+	} else if *input.Body.IsUpdateable {
+		// if it want to make is_updateable true, then we make sure status == "in progress".
+		// We don't need to worry about the user setting is_updateable to true, as we raise Auth error if it's false above
+		*input.Body.Status = database.StatusEnum_InProgress
+	}
+
+	if input.Body.Name != nil {
+		order_model.Name = *input.Body.Name
+	}
+	if input.Body.Phone != nil {
+		order_model.Phone = *input.Body.Phone
+	}
+	if input.Body.Address != nil {
+		order_model.Address = *input.Body.Address
+	}
+	if input.Body.DeliverySchedule != nil {
+		order_model.DeliverySchedule = input.Body.DeliverySchedule
+	}
+	if input.Body.Reviewed != nil {
+		order_model.Reviewed = *input.Body.Reviewed
+	}
+	if input.Body.IsUpdateable != nil {
+		order_model.IsUpdateable = *input.Body.IsUpdateable
+	}
+	if input.Body.Status != nil {
+		order_model.Status = *input.Body.Status
+	}
+	if input.Body.UserID != nil {
+		order_model.UserID = input.Body.UserID
+	}
+
+	err = database.Conn.Save(&order_model).Error
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("foreign key error")
+	}
+	if err != nil {
+		logger.Error().Err(err).Msg("Unknown error updating order in PUt /orders/{id}")
+		return nil, huma.Error400BadRequest("Bad Request updating order.")
+	}
+
+	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
+
+}

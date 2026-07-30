@@ -86,4 +86,17 @@ func RegisterAPI(api huma.API) {
 		AddPrint_Handler,
 	)
 
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPut,
+			Path:          "/api/v1/orders/{id}",
+			Summary:       "Update One",
+			Description:   "Update One Order",
+			Tags:          []string{"Orders"},
+			DefaultStatus: http.StatusNoContent,
+		},
+		UpdateOrder_Handler,
+	)
+
 }
