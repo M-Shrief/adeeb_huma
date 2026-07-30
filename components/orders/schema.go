@@ -115,7 +115,7 @@ func ReqSchema_To_DBModel(order_req CreateOneOrder_Req_Body) database.Order {
 	}
 
 	for _, print := range order_req.Prints {
-		new_print := NewPrintModel(print, order_req.UserID)
+		new_print := NewPrintModel(print, nil, order_req.UserID)
 		order_model.Prints = append(order_model.Prints, new_print)
 	}
 
@@ -197,7 +197,7 @@ func DistillDBModelsWithCount(models_with_count []OrderWithTotalCount) ([]schema
 	return orders_res, total_count
 }
 
-func NewPrintModel(print_req PrintItem_Req, user_id *uuid.UUID) database.Print {
+func NewPrintModel(print_req PrintItem_Req, order_id *uuid.UUID, user_id *uuid.UUID) database.Print {
 	new_print := database.Print{
 		FontType:      print_req.FontType,
 		FontColor:     print_req.FontColor,
@@ -211,6 +211,11 @@ func NewPrintModel(print_req PrintItem_Req, user_id *uuid.UUID) database.Print {
 		ProseQouteID:  print_req.ProseQouteID,
 		UserID:        user_id,
 	}
+	// using if condition as we don't want to assign it if we didn't make the order first
+	if order_id != nil {
+		new_print.OrderID = *order_id
+	}
+
 	return new_print
 }
 

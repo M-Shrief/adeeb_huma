@@ -228,20 +228,7 @@ func AddPrint_Handler(ctx context.Context, input *AddPrint_Req) (*AddPrint_Res, 
 		}
 	}
 
-	print_model := database.Print{
-		FontType:      input.Body.FontType,
-		FontColor:     input.Body.FontColor,
-		OutfitType:    input.Body.OutfitType,
-		OutfitColor:   input.Body.OutfitColor,
-		Qoute:         input.Body.Qoute,
-		Verses:        input.Body.Verses,
-		IsCouplet:     input.Body.IsCouplet,
-		PoemID:        input.Body.PoemID,
-		ChosenVerseID: input.Body.ChosenVerseID,
-		ProseQouteID:  input.Body.ProseQouteID,
-		OrderID:       input.ID,
-		UserID:        order_model.UserID,
-	}
+	print_model := NewPrintModel(input.Body, &input.ID, order_model.UserID)
 
 	err = gorm.G[database.Print](
 		database.Conn,
