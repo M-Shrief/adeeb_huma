@@ -3,6 +3,9 @@ package auth
 import (
 	"adeeb_huma/database"
 	"slices"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 type OPEnum string
@@ -61,4 +64,16 @@ func CheckAdminstration(user_permissions []string, op OPEnum) bool {
 
 	is_adminstrator := CheckPermissions(authorized_list, user_permissions, op)
 	return is_adminstrator
+}
+
+func CheckOwnership(owner_id *uuid.UUID, claims jwt.MapClaims) bool {
+	user_claim := claims["user"].(map[string]interface{})
+	user_id := user_claim["id"].(string)
+	if owner_id == nil {
+		return false
+	}
+	if owner_id.String() != user_id {
+		return false
+	}
+	return true
 }

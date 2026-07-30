@@ -135,14 +135,9 @@ func GetOrderByID_Handler(ctx context.Context, input *GetOrderByID_Req) (*GetOrd
 		return nil, huma.Error400BadRequest("Bad Request getting Order")
 	}
 
-	user_claim := claims["user"].(map[string]interface{})
-	user_id := user_claim["id"].(string)
 	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
 	if is_adminstrator == false {
-		if order_model.UserID == nil {
-			return nil, huma.Error401Unauthorized("Not Authorizaed")
-		}
-		if order_model.UserID.String() != user_id {
+		if auth.CheckOwnership(order_model.UserID, claims) == false {
 			return nil, huma.Error401Unauthorized("Not Authorizaed")
 		}
 	}
