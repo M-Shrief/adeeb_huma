@@ -279,6 +279,7 @@ func UpdateOrder_Handler(ctx context.Context, input *UpdateOrder_Req) (*schemas.
 		input.Body.IsUpdateable = nil
 		input.Body.Status = nil
 		input.Body.UserID = nil
+		input.Body.Reviewed = nil
 	}
 
 	// Ensuring Data Integrity: we check order.status & order.is_updateable,
