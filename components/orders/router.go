@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/auth"
 	"adeeb_huma/internal/logger"
@@ -119,30 +120,43 @@ func GetOrderByID_Handler(ctx context.Context, input *GetOrderByID_Req) (*GetOrd
 		return nil, huma.Error401Unauthorized("Not Authorizaed")
 	}
 
-	order_model, err := gorm.G[database.Order](database.Conn).
-		Preload("Prints", func(db gorm.PreloadBuilder) error {
-			db.Select("*")
-			return nil
-		}).
-		Where("id = ?", input.ID).
-		First(ctx)
+	var order_res OneOrder_Res
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, huma.Error404NotFound("Order's not found")
-	}
+	cache_key := cache.FormatKeyByID("orders", input.ID)
+	order_res, err = cache.GetJSON[OneOrder_Res](ctx, cache_key, OneOrder_Res{})
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /orders/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request getting Order")
+		order_model, err := gorm.G[database.Order](database.Conn).
+			Preload("Prints", func(db gorm.PreloadBuilder) error {
+				db.Select("*")
+				return nil
+			}).
+			Where("id = ?", input.ID).
+			First(ctx)
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("Order's not found")
+		}
+		if err != nil {
+			logger.Error().Err(err).Msg("Unknown errror in GET /orders/{id}.")
+			return nil, huma.Error400BadRequest("Bad Request getting Order")
+		}
+
+		order_res = DBModel_To_ResSchema(order_model)
+
+		// Adding the result to the cache service
+		err = cache.SetJSON(ctx, cache_key, order_res)
+		if err != nil {
+			logger.Error().Err(err).Msg("Couldn't Cache.SetJSON() in GET /orders/{id}")
+		}
 	}
 
 	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
 	if is_adminstrator == false {
-		if auth.CheckOwnership(order_model.UserID, claims) == false {
+		if auth.CheckOwnership(order_res.UserID, claims) == false {
 			return nil, huma.Error401Unauthorized("Not Authorizaed")
 		}
 	}
 
-	order_res := DBModel_To_ResSchema(order_model)
 	res := &GetOrderByID_Res{
 		Body:   order_res,
 		Status: http.StatusOK,
