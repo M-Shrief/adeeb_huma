@@ -3,6 +3,9 @@ package adeebs
 import (
 	"adeeb_huma/database"
 	"adeeb_huma/schemas"
+	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type GetOneAdeeb_Req struct {
@@ -125,4 +128,43 @@ func ReqSchemas_To_DBModels(adeebs_req []CreateOneAdeeb_Req_Body) []database.Ade
 	}
 
 	return adeeb_models
+}
+
+func CacheMap_to_ResSchema(adeeb_map map[string]any) (schemas.Adeeb_Descriptive, error) {
+	var adeeb_res schemas.Adeeb_Descriptive
+	var str string
+	var ok bool
+
+	str, ok = adeeb_map["id"].(string)
+	if !ok {
+		return adeeb_res, fmt.Errorf("couldn't convert cache's map to Res's schema ")
+	}
+	adeeb_res.ID, _ = uuid.Parse(str)
+
+	str, ok = adeeb_map["name"].(string)
+	if !ok {
+		return adeeb_res, fmt.Errorf("couldn't convert cache's map to Res's schema ")
+	}
+	adeeb_res.Name = str
+
+	str, ok = adeeb_map["bio"].(string)
+	if !ok {
+		return adeeb_res, fmt.Errorf("couldn't convert cache's map to Res's schema ")
+	}
+	adeeb_res.Bio = str
+
+	str, ok = adeeb_map["time_period"].(string)
+	if !ok {
+		return adeeb_res, fmt.Errorf("couldn't convert cache's map to Res's schema ")
+	}
+	adeeb_res.TimePeriod = database.TimePeriodEnum(str)
+
+	reviewed, ok := adeeb_map["reviewed"].(bool)
+	if !ok {
+		return adeeb_res, fmt.Errorf("couldn't convert cache's map to Res's schema ")
+	}
+
+	adeeb_res.Reviewed = reviewed
+
+	return adeeb_res, nil
 }

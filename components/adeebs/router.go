@@ -1,6 +1,7 @@
 package adeebs
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
@@ -43,6 +44,15 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 
 func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAdeeb_Res, error) {
 
+	cache_key := cache.FormatKeyByID("adeebs", input.ID)
+	cached_result, _ := cache.GetJSON(ctx, cache_key)
+	if cached_result != nil {
+		adeeb_res, err := CacheMap_to_ResSchema(cached_result)
+		if err == nil {
+			return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
+		}
+	}
+
 	adeeb_model, err := gorm.G[database.Adeeb](
 		database.Conn,
 		clause.Select{
@@ -66,12 +76,11 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 	}
 
 	adeeb_res := DBModel_To_ResSchema(adeeb_model)
-	res := &GetOneAdeeb_Res{
-		Body:   adeeb_res,
-		Status: http.StatusOK,
-	}
 
-	return res, nil
+	// Adding the result to the cache service
+	_ = cache.SetJSON(ctx, cache_key, adeeb_res)
+
+	return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
 }
 
 func CreateOneAdeeb_Handler(ctx context.Context, input *CreateOneAdeeb_Req) (*CreateOneAdeeb_Res, error) {
@@ -188,6 +197,9 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 		return nil, huma.Error400BadRequest("Bad Request updating adeeb")
 	}
 
+	cache_key := cache.FormatKeyByID("adeebs", input.ID)
+	_ = cache.DelKey(ctx, cache_key)
+
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
 	}
@@ -205,6 +217,9 @@ func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.
 		logger.Error().Err(err).Msg("Unknown errror in DELETE /adeebs/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request Deleting Adeeb")
 	}
+
+	cache_key := cache.FormatKeyByID("adeebs", input.ID)
+	_ = cache.DelKey(ctx, cache_key)
 
 	res := &schemas.Delete_Res{
 		Status: http.StatusNoContent,
