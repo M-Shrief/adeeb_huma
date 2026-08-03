@@ -1,6 +1,7 @@
 package prose_qoutes
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
@@ -43,6 +44,13 @@ func GetAllProseQoutes_Handler(ctx context.Context, input *schemas.GetAll_Req) (
 }
 
 func GetOneProseQoute_Handler(ctx context.Context, input *GetOneProseQoute_Req) (*GetOneProseQoute_Res, error) {
+	var prose_qoute_res GetOneProseQoute_Res_Body
+
+	cache_key := cache.FormatKeyByID("prose_qoutes", input.ID)
+	prose_qoute_res, err := cache.GetJSON[GetOneProseQoute_Res_Body](ctx, cache_key, GetOneProseQoute_Res_Body{})
+	if err == nil {
+		return &GetOneProseQoute_Res{prose_qoute_res, http.StatusOK}, nil
+	}
 
 	prose_qoute_model, err := gorm.G[database.ProseQoute](
 		database.Conn,
@@ -72,7 +80,6 @@ func GetOneProseQoute_Handler(ctx context.Context, input *GetOneProseQoute_Req) 
 		return nil, huma.Error400BadRequest("Bad Request getting ProseQoute")
 	}
 
-	var prose_qoute_res GetOneProseQoute_Res_Body
 	prose_qoute_res.ID = prose_qoute_model.ID
 	prose_qoute_res.Qoute = prose_qoute_model.Qoute
 	prose_qoute_res.Source = prose_qoute_model.Source
@@ -82,6 +89,12 @@ func GetOneProseQoute_Handler(ctx context.Context, input *GetOneProseQoute_Req) 
 	prose_qoute_res.AdeebID = prose_qoute_model.AdeebID
 	prose_qoute_res.Adeeb.ID = prose_qoute_model.Adeeb.ID
 	prose_qoute_res.Adeeb.Name = prose_qoute_model.Adeeb.Name
+
+	// Adding the result to the cache service
+	err = cache.SetJSON(ctx, cache_key, prose_qoute_res)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.SetJSON() in GET /prose_qoutes/{id}")
+	}
 
 	res := &GetOneProseQoute_Res{
 		Body:   prose_qoute_res,
@@ -207,6 +220,12 @@ func UpdateProseQoute_Handler(ctx context.Context, input *UpdateProseQoute_Req) 
 		return nil, huma.Error400BadRequest("Bad Request updating prose_qoute")
 	}
 
+	cache_key := cache.FormatKeyByID("prose_qoutes", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /prose_qoutes/{id}")
+	}
+
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
 	}
@@ -223,6 +242,12 @@ func DeleteProseQouteHandler(ctx context.Context, input *DeleteProseQoute_Req) (
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in DELETE /prose_qoutes/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request Deleting ProseQoute")
+	}
+
+	cache_key := cache.FormatKeyByID("prose_qoutes", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /prose_qoutes/{id}")
 	}
 
 	res := &schemas.Delete_Res{
