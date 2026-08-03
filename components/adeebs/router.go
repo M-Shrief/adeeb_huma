@@ -43,14 +43,13 @@ func GetAllAdeebs_Handler(ctx context.Context, input *schemas.GetAll_Req) (*sche
 }
 
 func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAdeeb_Res, error) {
+	var adeeb_res schemas.Adeeb_Descriptive
 
 	cache_key := cache.FormatKeyByID("adeebs", input.ID)
-	cached_result, _ := cache.GetJSON(ctx, cache_key)
-	if cached_result != nil {
-		adeeb_res, err := CacheMap_to_ResSchema(cached_result)
-		if err == nil {
-			return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
-		}
+	adeeb_res, err := cache.GetJSON[schemas.Adeeb_Descriptive](ctx, cache_key, schemas.Adeeb_Descriptive{})
+	if err == nil {
+		logger.Info().Msg("Cached")
+		return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
 	}
 
 	adeeb_model, err := gorm.G[database.Adeeb](
@@ -75,7 +74,7 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 		return nil, huma.Error400BadRequest("Bad Request getting Adeeb")
 	}
 
-	adeeb_res := DBModel_To_ResSchema(adeeb_model)
+	adeeb_res = DBModel_To_ResSchema(adeeb_model)
 
 	// Adding the result to the cache service
 	_ = cache.SetJSON(ctx, cache_key, adeeb_res)
