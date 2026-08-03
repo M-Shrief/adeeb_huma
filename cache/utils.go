@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/valkey-io/valkey-glide/go/v2/constants"
@@ -11,22 +12,26 @@ import (
 
 // Reusuable function to reduce boilerplate dealing with JSON data.
 
-func GetJSON(ctx context.Context, key string) (map[string]any, error) {
+// Make sure to use generics using your own struct,
+// so that it's used in json.unmarshal,
+// and you can use it directly without manual conversion
+func GetJSON[T any](ctx context.Context, key string, returned_struct T) (T, error) {
 	value, err := Client.Get(context.TODO(), key)
 	if err != nil || value.IsNil() {
-		return nil, err
+		// Make sure to return custom error, so that if err != nil but value is nil,
+		// It'll fail your outer check for err != nil.
+		return returned_struct, fmt.Errorf("Couldn't get value")
 	}
-	var data map[string]any
 	json_str := value.Value()
 
 	// Unmarshal the JSON string into the map
 	// Note: jsonStr must be converted to a byte slice []byte
-	err = json.Unmarshal([]byte(json_str), &data)
+	err = json.Unmarshal([]byte(json_str), &returned_struct)
 	if err != nil {
-		return nil, err
+		return returned_struct, err
 	}
 
-	return data, nil
+	return returned_struct, nil
 }
 
 // Used to Set JSON data as a string, as I don't need atomic updates.
