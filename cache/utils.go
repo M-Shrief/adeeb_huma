@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/valkey-io/valkey-glide/go/v2/constants"
+	"github.com/valkey-io/valkey-glide/go/v2/options"
 )
 
 // Reusuable function to reduce boilerplate dealing with JSON data.
@@ -35,7 +37,12 @@ func SetJSON(ctx context.Context, key string, value any) error {
 		return err
 	}
 	json_str := string(json_bytes) // Convert byte slice to string
-	_, err = Client.Set(ctx, key, json_str)
+	_, err = Client.SetWithOptions(
+		ctx,
+		key,
+		json_str,
+		options.SetOptions{Expiry: &options.Expiry{Type: constants.Seconds, Duration: 60 * 15}},
+	)
 	if err != nil {
 		return err
 	}
