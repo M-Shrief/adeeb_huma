@@ -1,6 +1,7 @@
 package chosen_verses
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
@@ -42,6 +43,13 @@ func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) 
 }
 
 func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req) (*GetOneChosenVerse_Res, error) {
+	var chosen_verse_res GetOneChosenVerse_Res_Body
+
+	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
+	chosen_verse_res, err := cache.GetJSON[GetOneChosenVerse_Res_Body](ctx, cache_key, GetOneChosenVerse_Res_Body{})
+	if err == nil {
+		return &GetOneChosenVerse_Res{chosen_verse_res, http.StatusOK}, nil
+	}
 
 	chosen_verse_model, err := gorm.G[database.ChosenVerse](
 		database.Conn,
@@ -76,7 +84,6 @@ func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req
 		return nil, huma.Error400BadRequest("Bad Request getting ChosenVerse")
 	}
 
-	var chosen_verse_res GetOneChosenVerse_Res_Body
 	chosen_verse_res.ID = chosen_verse_model.ID
 	chosen_verse_res.Verses = chosen_verse_model.Verses
 	chosen_verse_res.IsCouplet = chosen_verse_model.IsCouplet
@@ -90,6 +97,12 @@ func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req
 	chosen_verse_res.PoemID = chosen_verse_model.PoemID
 	chosen_verse_res.Poem.ID = chosen_verse_model.Poem.ID
 	chosen_verse_res.Poem.Intro = chosen_verse_model.Poem.Intro
+
+	// Adding the result to the cache service
+	err = cache.SetJSON(ctx, cache_key, chosen_verse_res)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.SetJSON() in GET /chosen_verses/{id}")
+	}
 
 	res := &GetOneChosenVerse_Res{
 		Body:   chosen_verse_res,
@@ -220,6 +233,12 @@ func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req
 		return nil, huma.Error400BadRequest("Bad Request updating chosen_verse")
 	}
 
+	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /chosen_verses/{id}")
+	}
+
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
 	}
@@ -236,6 +255,12 @@ func DeleteChosenVerseHandler(ctx context.Context, input *DeleteChosenVerse_Req)
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in DELETE /chosen_verses/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request Deleting ChosenVerse")
+	}
+
+	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /chosen_verses/{id}")
 	}
 
 	res := &schemas.Delete_Res{
