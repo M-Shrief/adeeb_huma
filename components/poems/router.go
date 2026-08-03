@@ -1,6 +1,7 @@
 package poems
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
@@ -42,6 +43,13 @@ func GetAllPoems_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schem
 }
 
 func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem_Res, error) {
+	cache_key := cache.FormatKeyByID("poems", input.ID)
+	poem_res, err := cache.GetJSON[GetOnePoem_Res_Body](ctx, cache_key, GetOnePoem_Res_Body{})
+	if err == nil {
+		return &GetOnePoem_Res{poem_res, http.StatusOK}, nil
+	}
+
+	logger.Info().Msg("None")
 
 	poem_model, err := gorm.G[database.Poem](
 		database.Conn,
@@ -74,7 +82,6 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 		return nil, huma.Error400BadRequest("Bad Request getting Poem")
 	}
 
-	var poem_res GetOnePoem_Res_Body
 	poem_res.ID = poem_model.ID
 	poem_res.Intro = poem_model.Intro
 	poem_res.Verses = poem_model.Verses
@@ -92,6 +99,12 @@ func GetOnePoem_Handler(ctx context.Context, input *GetOnePoem_Req) (*GetOnePoem
 		item.IsCouplet = model.IsCouplet
 
 		poem_res.ChosenVerses = append(poem_res.ChosenVerses, item)
+	}
+
+	// Adding the result to the cache service
+	err = cache.SetJSON(ctx, cache_key, poem_res)
+	if err != nil {
+		logger.Error().Err(err).Msg("Failed to use Cache.Set() in GET /poems/{id}.")
 	}
 
 	res := &GetOnePoem_Res{
@@ -218,6 +231,12 @@ func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Up
 		return nil, huma.Error400BadRequest("Bad Request updating poem")
 	}
 
+	cache_key := cache.FormatKeyByID("poems", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /poems/{id}")
+	}
+
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
 	}
@@ -238,6 +257,12 @@ func DeletePoemHandler(ctx context.Context, input *DeletePoem_Req) (*schemas.Del
 
 	res := &schemas.Delete_Res{
 		Status: http.StatusNoContent,
+	}
+
+	cache_key := cache.FormatKeyByID("poems", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /poems/{id}")
 	}
 
 	return res, nil
