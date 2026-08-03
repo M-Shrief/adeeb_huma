@@ -252,6 +252,12 @@ func AddPrint_Handler(ctx context.Context, input *AddPrint_Req) (*AddPrint_Res, 
 		return nil, huma.Error400BadRequest("Bad Request adding print.")
 	}
 
+	cache_key := cache.FormatKeyByID("orders", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in POST /orders/{id}/prints")
+	}
+
 	return &AddPrint_Res{Body: NewPrintRes(print_model), Status: http.StatusCreated}, nil
 
 }
@@ -353,6 +359,12 @@ func UpdateOrder_Handler(ctx context.Context, input *UpdateOrder_Req) (*schemas.
 		return nil, huma.Error400BadRequest("Bad Request updating order.")
 	}
 
+	cache_key := cache.FormatKeyByID("orders", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /orders/{id}")
+	}
+
 	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
 
 }
@@ -434,6 +446,12 @@ func UpdatePrint_Handler(ctx context.Context, input *UpdatePrint_Req) (*schemas.
 		return nil, huma.Error400BadRequest("Bad Request updating print.")
 	}
 
+	cache_key := cache.FormatKeyByID("orders", input.OrderID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in POST /orders/{order_id}/prints/{print_id}")
+	}
+
 	return &schemas.Update_Res{Status: http.StatusNoContent}, nil
 
 }
@@ -485,6 +503,12 @@ func DeleteOrder_Handler(ctx context.Context, input *DeleteOrder_Req) (*schemas.
 		return nil, huma.Error400BadRequest("Bad Request deleting order.")
 	}
 
+	cache_key := cache.FormatKeyByID("orders", input.ID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /orders/{id}")
+	}
+
 	return &schemas.Delete_Res{Status: http.StatusNoContent}, nil
 
 }
@@ -528,6 +552,11 @@ func DeletePrint_Handler(ctx context.Context, input *DeletePrint_Req) (*schemas.
 		return nil, huma.Error400BadRequest("Bad Request deleting order.")
 	}
 
+	cache_key := cache.FormatKeyByID("orders", input.OrderID)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in POST /orders/{order_id}/prints/{print_id}")
+	}
 	return &schemas.Delete_Res{Status: http.StatusNoContent}, nil
 
 }
