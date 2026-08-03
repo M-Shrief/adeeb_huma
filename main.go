@@ -1,6 +1,7 @@
 package main
 
 import (
+	"adeeb_huma/cache"
 	"adeeb_huma/config"
 	"adeeb_huma/database"
 	"adeeb_huma/internal/logger"
@@ -24,6 +25,13 @@ func main() {
 	database.CreateEnumsIfNotExists()
 	// 3. Auto Migrate Models (Optional)
 	database.Migrate()
+
+	// Initiate cache client
+	cache_client, err := cache.NewCache()
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't initialize cache connection")
+	}
+	defer cache_client.Close()
 
 	// Router & API
 	r := router.NewRouter()

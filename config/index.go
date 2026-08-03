@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
@@ -38,6 +39,14 @@ var (
 	DB_PASSWORD string
 )
 
+// Cache
+var (
+	Cache_HOST     string
+	Cache_PORT     int
+	Cache_Username string
+	Cache_PASSWORD string
+)
+
 func assignValues() {
 	// General
 	APP_ENV = envs["APP_ENV"]
@@ -50,6 +59,11 @@ func assignValues() {
 	DB_USER = envs["DB_USER"]
 	DB_NAME = envs["DB_NAME"]
 	DB_PASSWORD = envs["DB_PASSWORD"]
+
+	Cache_HOST = envs["Cache_HOST"]
+	Cache_PORT, _ = strconv.Atoi(envs["Cache_PORT"])
+	Cache_Username = envs["CacCachCache_Usernamee_Usernamehe_HOST"]
+	Cache_PASSWORD = envs["Cache_PASSWORD"]
 
 	assignJWTKeys()
 }
