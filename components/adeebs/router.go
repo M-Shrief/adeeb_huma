@@ -48,7 +48,6 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 	cache_key := cache.FormatKeyByID("adeebs", input.ID)
 	adeeb_res, err := cache.GetJSON[schemas.Adeeb_Descriptive](ctx, cache_key, schemas.Adeeb_Descriptive{})
 	if err == nil {
-		logger.Info().Msg("Cached")
 		return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
 	}
 
@@ -77,7 +76,10 @@ func GetOneAdeeb_Handler(ctx context.Context, input *GetOneAdeeb_Req) (*GetOneAd
 	adeeb_res = DBModel_To_ResSchema(adeeb_model)
 
 	// Adding the result to the cache service
-	_ = cache.SetJSON(ctx, cache_key, adeeb_res)
+	err = cache.SetJSON(ctx, cache_key, adeeb_res)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.SetJSON() in GET /adeebs/{id}")
+	}
 
 	return &GetOneAdeeb_Res{adeeb_res, http.StatusOK}, nil
 }
@@ -197,7 +199,10 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 	}
 
 	cache_key := cache.FormatKeyByID("adeebs", input.ID)
-	_ = cache.DelKey(ctx, cache_key)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /adeebs/{id}")
+	}
 
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
@@ -218,7 +223,10 @@ func DeleteAdeeb_Handler(ctx context.Context, input *DeleteAdeeb_Req) (*schemas.
 	}
 
 	cache_key := cache.FormatKeyByID("adeebs", input.ID)
-	_ = cache.DelKey(ctx, cache_key)
+	err = cache.DelKey(ctx, cache_key)
+	if err != nil {
+		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /adeebs/{id}")
+	}
 
 	res := &schemas.Delete_Res{
 		Status: http.StatusNoContent,
