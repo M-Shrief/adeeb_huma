@@ -1,6 +1,7 @@
 package poems
 
 import (
+	"adeeb_huma/internal/auth"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -43,6 +44,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Create One Poem",
 			Tags:          []string{"Poems"},
 			DefaultStatus: http.StatusCreated,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		CreateOnePoem_Handler,
 	)
@@ -56,6 +68,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Create Many Poems",
 			Tags:          []string{"Poems"},
 			DefaultStatus: http.StatusCreated,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		CreateManyPoems_Handler,
 	)
@@ -69,6 +92,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Update One Poem",
 			Tags:          []string{"Poems"},
 			DefaultStatus: http.StatusNoContent,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		UpdatePoem_Handler,
 	)
@@ -82,6 +116,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Delete One Poem",
 			Tags:          []string{"Poems"},
 			DefaultStatus: http.StatusNoContent,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		DeletePoemHandler,
 	)
