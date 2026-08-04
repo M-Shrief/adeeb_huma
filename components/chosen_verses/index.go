@@ -1,6 +1,7 @@
 package chosen_verses
 
 import (
+	"adeeb_huma/internal/auth"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -43,6 +44,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Create One ChosenVerse",
 			Tags:          []string{"ChosenVerses"},
 			DefaultStatus: http.StatusCreated,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		CreateOneChosenVerse_Handler,
 	)
@@ -56,6 +68,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Create Many ChosenVerses",
 			Tags:          []string{"ChosenVerses"},
 			DefaultStatus: http.StatusCreated,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		CreateManyChosenVerses_Handler,
 	)
@@ -69,6 +92,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Update One ChosenVerse",
 			Tags:          []string{"ChosenVerses"},
 			DefaultStatus: http.StatusNoContent,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		UpdateChosenVerse_Handler,
 	)
@@ -82,6 +116,17 @@ func RegisterAPI(api huma.API) {
 			Description:   "Delete One ChosenVerse",
 			Tags:          []string{"ChosenVerses"},
 			DefaultStatus: http.StatusNoContent,
+			Middlewares:   huma.Middlewares{auth.VerifyAdminstratorMiddleware(api)},
+			Parameters: []*huma.Param{
+				{
+					Name:     "Authorization",
+					In:       "header",
+					Required: true,
+					Schema: &huma.Schema{
+						Type: "string",
+					},
+				},
+			},
 		},
 		DeleteChosenVerseHandler,
 	)
