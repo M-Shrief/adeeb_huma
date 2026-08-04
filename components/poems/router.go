@@ -223,6 +223,10 @@ func UpdatePoem_Handler(ctx context.Context, input *UpdatePoem_Req) (*schemas.Up
 	}
 
 	err = database.Conn.Save(&poem_model).Error
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return nil, huma.Error400BadRequest("Duplicate for Poem's intro error")
+	}
+
 	if errors.Is(err, gorm.ErrForeignKeyViolated) {
 		return nil, huma.Error400BadRequest("foreign key error")
 	}

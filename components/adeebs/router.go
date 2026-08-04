@@ -190,6 +190,9 @@ func UpdateAdeeb_Handler(ctx context.Context, input *UpdateAdeeb_Req) (*schemas.
 	}
 
 	err = database.Conn.Save(&adeeb_model).Error
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return nil, huma.Error400BadRequest("Duplicate for Adeeb's name error")
+	}
 	if errors.Is(err, gorm.ErrForeignKeyViolated) {
 		return nil, huma.Error400BadRequest("foreign key error")
 	}
