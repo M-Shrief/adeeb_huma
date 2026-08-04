@@ -42,7 +42,18 @@ func Init() huma.API {
 }
 
 func RegisterAllRoutes() {
+	RegisterIndexRoutes(API)
 
+	adeebs.RegisterAPI(API)
+	poems.RegisterAPI(API)
+	chosen_verses.RegisterAPI(API)
+	prose_qoutes.RegisterAPI(API)
+
+	users.RegisterAPI(API)
+	orders.RegisterAPI(API)
+}
+
+func RegisterIndexRoutes(api huma.API) {
 	huma.Register(
 		API,
 		huma.Operation{
@@ -71,13 +82,6 @@ func RegisterAllRoutes() {
 		PingRouteHandler,
 	)
 
-	adeebs.RegisterAPI(API)
-	poems.RegisterAPI(API)
-	chosen_verses.RegisterAPI(API)
-	prose_qoutes.RegisterAPI(API)
-
-	users.RegisterAPI(API)
-	orders.RegisterAPI(API)
 }
 
 type IndexResponse_JSONBody struct {
