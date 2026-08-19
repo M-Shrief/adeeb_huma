@@ -217,7 +217,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 		return nil, huma.Error404NotFound("User's doesn't exist")
 	}
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /poems/{id}.")
+		logger.Error().Err(err).Msg("Unknown errror in Post /users/login.")
 		return nil, huma.Error400BadRequest("Bad Request trying to login, try again later")
 	}
 
@@ -236,7 +236,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 		auth.CreatePermissions(user_model.Roles),
 	)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown error creating JWT token in POST /users/signup")
+		logger.Error().Err(err).Msg("Unknown error creating JWT token in POST /users/login")
 		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
 	}
 
@@ -284,7 +284,7 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 	if input.Body.Password != nil {
 		new_hashed_password, err := auth.HashPassword(*input.Body.Password)
 		if err != nil {
-			logger.Error().Err(err).Msg("Error hashing passsord in POST /users/signup")
+			logger.Error().Err(err).Msg("Error hashing passsord in PUT /users/me")
 			return nil, huma.Error400BadRequest("Couldn't process the password")
 		}
 		user_model.Password = new_hashed_password
@@ -344,7 +344,7 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 	if input.Body.Password != nil {
 		new_hashed_password, err := auth.HashPassword(*input.Body.Password)
 		if err != nil {
-			logger.Error().Err(err).Msg("Error hashing passsord in POST /users/signup")
+			logger.Error().Err(err).Msg("Error hashing passsord in PUT /users/{id}")
 			return nil, huma.Error400BadRequest("Couldn't process the password")
 		}
 		user_model.Password = new_hashed_password
