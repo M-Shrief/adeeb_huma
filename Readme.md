@@ -2,6 +2,12 @@
 
 An Iteration for Adeeb's RESTful API using Go, Huma and Postgres.
 
+All iterations should apply the same characteristics, like:
+- JWT authentication & authorization
+- API documentation (mostly with Scalar)
+- Input/Output Validation
+- ...etc
+
 
 ## Tech stack
 - Language: Go
