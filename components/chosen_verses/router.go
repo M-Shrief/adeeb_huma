@@ -205,6 +205,9 @@ func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, huma.Error404NotFound("ChosenVerse's not found")
 	}
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("Foreign Key error")
+	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in PUT /chosen_verses/{id}.")
 		return nil, huma.Error400BadRequest("Bad Request update ChosenVerse")
