@@ -134,6 +134,9 @@ func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVer
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
 		return nil, huma.Error409Conflict("ChosenVerse already exists")
 	}
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("Foreign Key error")
+	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in POST /chosen_verses.")
 		return nil, huma.Error400BadRequest("Bad Request creating ChosenVerse.")
@@ -169,6 +172,8 @@ func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosen
 		if err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Already exists"})
+			} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Foreign Key error"})
 			} else {
 				logger.Error().Err(err).Msg("Unknown errror in POST /chosen_verses/many.")
 				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
