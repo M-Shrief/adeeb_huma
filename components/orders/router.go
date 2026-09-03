@@ -171,6 +171,9 @@ func CreateOneOrder_Handler(ctx context.Context, input *CreateOneOrder_Req) (*Cr
 	err := gorm.G[database.Order](database.Conn).
 		Create(ctx, &data)
 
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return nil, huma.Error400BadRequest("Foreign Key error")
+	}
 	if err != nil {
 		logger.Error().Err(err).Msg("Unknown errror in POST /orders.")
 		return nil, huma.Error400BadRequest("Bad Request creating Order.")
@@ -189,6 +192,10 @@ func CreateManyOrder_Handler(ctx context.Context, input *CreateManyOrder_Req) (*
 	for i, item := range data {
 		err := gorm.G[database.Order](database.Conn).Create(ctx, &item)
 
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Foreign Key error"})
+			continue
+		}
 		if err != nil {
 			logger.Error().Err(err).Msg("Unknown errror in POST /orders/many.")
 			InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
