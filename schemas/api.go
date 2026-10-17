@@ -10,8 +10,8 @@ type BaseResponse_JSONBody struct {
 }
 
 type GetAll_Req struct {
-	Limit  int `query:"limit" default:"100" required:"true" maximum:"100" doc:"limit the number of data items."`
-	Offset int `query:"offset" default:"0" required:"true"`
+	Limit  int `query:"limit" default:"100" required:"true" maximum:"100" minimum:"0" doc:"limit the number of data items."`
+	Offset int `query:"offset" default:"0" minimum:"0" required:"true"`
 }
 
 type GetAll_Res[T any] struct {
