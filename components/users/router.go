@@ -1,59 +1,36 @@
 package users
 
 import (
-	"adeeb_huma/database"
-	"adeeb_huma/internal/auth"
+	"adeeb_huma/internal/errs"
 	"adeeb_huma/internal/logger"
-	"adeeb_huma/internal/utils"
 	"adeeb_huma/schemas"
 	"context"
-	"errors"
 	"net/http"
-	"slices"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.GetAll_Res[schemas.User_Descriptive], error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	result, err := GetAll_Service(input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
-	if is_adminstrator == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	var results []UserWithTotalCount
-
-	err = database.Conn.Table("users").
-		Select("*, COUNT(*) OVER() as total_count").
-		Limit(input.Limit).
-		Offset(input.Offset).
-		Find(&results).Error
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /users.")
-		return nil, huma.Error404NotFound("Unknown error while getting users")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
-	users, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.User_Descriptive]{
-		Body: schemas.GetAll_Res_Body[schemas.User_Descriptive]{
-			Data:       users,
-			Limit:      input.Limit,
-			Offset:     input.Offset,
-			TotalCount: total_count,
-		},
+		Body:   *result,
 		Status: http.StatusOK,
 	}
 
@@ -61,47 +38,27 @@ func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.
 }
 
 func GetCurrentUser_Handler(ctx context.Context, input *GetCurrentUser_Req) (*GetOneUser_Res, error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	result, err := GetCurrentUser_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("User's not found")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Normal, auth.OPEnum_Read),
-	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Read)
-	if is_authorized == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_claim := claims["user"].(map[string]interface{})
-	user_id := user_claim["id"].(string)
-	user_model, err := gorm.G[database.User](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "username"},
-				{Name: "roles"},
-			},
-		}).
-		Where("id = ?", user_id).
-		First(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /users/me.")
-		return nil, huma.Error404NotFound("Unknown error while getting current user")
-	}
-
-	user := DBModel_To_ResSchema(user_model)
 	res := &GetOneUser_Res{
-		Body:   user,
+		Body:   *result,
 		Status: http.StatusOK,
 	}
 
@@ -109,42 +66,27 @@ func GetCurrentUser_Handler(ctx context.Context, input *GetCurrentUser_Req) (*Ge
 }
 
 func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUser_Res, error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	result, err := GetOneById_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("User's not found")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
-	if is_adminstrator == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_model, err := gorm.G[database.User](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "username"},
-				{Name: "roles"},
-			},
-		}).
-		Where("id = ?", input.ID).
-		First(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /users/{id}.")
-		return nil, huma.Error404NotFound("Unknown error while users by ID")
-	}
-
-	user := DBModel_To_ResSchema(user_model)
 	res := &GetOneUser_Res{
-		Body:   user,
+		Body:   *result,
 		Status: http.StatusOK,
 	}
 
@@ -152,158 +94,90 @@ func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUs
 }
 
 func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res, error) {
-	new_hashed_password, err := auth.HashPassword(input.Body.Password)
+	result, err := Signup_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Error hashing passsord in POST /users/signup")
-		return nil, huma.Error400BadRequest("Couldn't process the password")
-	}
-
-	roles := utils.EnsureSliceItemsAreUnique(input.Body.Roles)
-	if slices.Contains(roles, database.RoleEnum_Normal) == false {
-		roles = append(roles, database.RoleEnum_Normal)
-	}
-	user_model := database.User{
-		Username: input.Body.Username,
-		Password: new_hashed_password,
-		Roles:    roles,
-	}
-
-	err = gorm.G[database.User](
-		database.Conn,
-		clause.Returning{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "username"},
-				// {Name: "password"},
-				{Name: "roles"},
-			},
-		},
-	).Create(ctx, &user_model)
-
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, huma.Error409Conflict("User already exists")
-	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown error creating User in POST /users/signup")
-		return nil, huma.Error400BadRequest("Bad Request signing up user.")
-	}
-
-	token, err := auth.CreateJWT(
-		time.Hour*2,
-		auth.JWTUserClaim{
-			ID:       user_model.ID.String(),
-			Username: user_model.Username,
-			Roles:    user_model.Roles,
-		},
-		auth.CreatePermissions(user_model.Roles),
-	)
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown error creating JWT token in POST /users/signup")
-		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("Username already exists")
+			case http.StatusBadRequest:
+				if api_error.Message == "" {
+					api_error.Message = "Bad request, try again later"
+				}
+				return nil, huma.Error400BadRequest(api_error.Message)
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{DBModel_To_ResSchema(user_model), token},
+		Body:   *result,
 		Status: http.StatusCreated,
 	}, nil
 }
 
 func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, error) {
-	user_model, err := gorm.G[database.User](database.Conn).
-		Where("username = ?", input.Body.Username).
-		First(ctx)
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, huma.Error404NotFound("User's doesn't exist")
-	}
+	result, err := Login_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in Post /users/login.")
-		return nil, huma.Error400BadRequest("Bad Request trying to login, try again later")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				if api_error.Message == "" {
+					api_error.Message = "Not Authorized"
+				}
+				return nil, huma.Error401Unauthorized(api_error.Message)
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("User is not found")
+			case http.StatusBadRequest:
+				if api_error.Message == "" {
+					api_error.Message = "Bad request, try again later"
+				}
+				return nil, huma.Error400BadRequest(api_error.Message)
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-
-	err = auth.VerifyPassword(input.Body.Password, user_model.Password)
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Password is incorrect")
-	}
-
-	token, err := auth.CreateJWT(
-		time.Hour*2,
-		auth.JWTUserClaim{
-			ID:       user_model.ID.String(),
-			Username: user_model.Username,
-			Roles:    user_model.Roles,
-		},
-		auth.CreatePermissions(user_model.Roles),
-	)
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown error creating JWT token in POST /users/login")
-		return nil, huma.Error500InternalServerError("Unknown Error, try again later.")
-	}
-
 	return &UserAuthorized_Res{
-		Body:   UserAuthorized_Res_Body{DBModel_To_ResSchema(user_model), token},
+		Body:   *result,
 		Status: http.StatusCreated,
 	}, nil
 
 }
 
 func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req) (*schemas.Update_Res, error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	err := UpdateCurrentUser_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Normal, auth.OPEnum_Write),
-	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
-	if is_authorized == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_claim := claims["user"].(map[string]interface{})
-	user_id := user_claim["id"].(string)
-	user_model, err := gorm.G[database.User](database.Conn).
-		Where("id = ?", user_id).
-		First(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
-		return nil, huma.Error400BadRequest("Unknown error while updating current user")
-	}
-
-	if input.Body.Username != nil {
-		user_model.Username = *input.Body.Username
-	}
-	if input.Body.Password != nil {
-		new_hashed_password, err := auth.HashPassword(*input.Body.Password)
-		if err != nil {
-			logger.Error().Err(err).Msg("Error hashing passsord in PUT /users/me")
-			return nil, huma.Error400BadRequest("Couldn't process the password")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("User already exists")
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("User is not found")
+			case http.StatusBadRequest:
+				if api_error.Message == "" {
+					api_error.Message = "Bad request, try again later"
+				}
+				return nil, huma.Error400BadRequest(api_error.Message)
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
-		user_model.Password = new_hashed_password
-	}
-	if input.Body.Roles != nil {
-		roles := utils.EnsureSliceItemsAreUnique(*input.Body.Roles)
-		if slices.Contains(roles, database.RoleEnum_Normal) == false {
-			roles = append(roles, database.RoleEnum_Normal)
-		}
-		user_model.Roles = roles
-	}
-
-	err = database.Conn.Save(&user_model).Error
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, huma.Error400BadRequest("Duplicate for User's username error")
-	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/me.")
-		return nil, huma.Error400BadRequest("Bad Request updating current User")
 	}
 
 	res := &schemas.Update_Res{
@@ -314,56 +188,29 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 }
 
 func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*schemas.Update_Res, error) {
-	claims, err := auth.VerifyJWT(input.Auth)
+	err := UpdateUserById_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
-	if is_adminstrator == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_model, err := gorm.G[database.User](database.Conn).
-		Where("id = ?", input.ID).
-		First(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}.")
-		return nil, huma.Error400BadRequest("Unknown error while updating user bu id")
-	}
-
-	if input.Body.Username != nil {
-		user_model.Username = *input.Body.Username
-	}
-	if input.Body.Password != nil {
-		new_hashed_password, err := auth.HashPassword(*input.Body.Password)
-		if err != nil {
-			logger.Error().Err(err).Msg("Error hashing passsord in PUT /users/{id}")
-			return nil, huma.Error400BadRequest("Couldn't process the password")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("User already exists")
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("User is not found")
+			case http.StatusBadRequest:
+				if api_error.Message == "" {
+					api_error.Message = "Bad request, try again later"
+				}
+				return nil, huma.Error400BadRequest(api_error.Message)
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
-		user_model.Password = new_hashed_password
-	}
-	if input.Body.Roles != nil {
-		roles := utils.EnsureSliceItemsAreUnique(*input.Body.Roles)
-		if slices.Contains(roles, database.RoleEnum_Normal) == false {
-			roles = append(roles, database.RoleEnum_Normal)
-		}
-		user_model.Roles = roles
-	}
-
-	err = database.Conn.Save(&user_model).Error
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, huma.Error400BadRequest("Duplicate for User's username error")
-	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request updating User by id")
 	}
 
 	res := &schemas.Update_Res{
@@ -374,28 +221,23 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 }
 
 func BanUserByID_Handler(ctx context.Context, input *BanUserByID_Req) (*schemas.Update_Res, error) {
-	claims, err := auth.VerifyJWT(input.Auth)
+	err := BanUserById_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
-	if is_adminstrator == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	// We use raw sql to make it in one query, it's fast and ensure uniqueness like we do in the server.
-	_, err = database.Conn.Raw("UPDATE users set roles =  (select array_agg(distinct e) from unnest(array_append(users.roles, $2::role_enum)) e) WHERE id = $1", input.ID.String(), "Banned").Rows()
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /users/{id}/ban.")
-		return nil, huma.Error400BadRequest("Unknown error while banning user by id")
-	}
-
 	res := &schemas.Update_Res{
 		Status: http.StatusNoContent,
 	}
@@ -404,35 +246,24 @@ func BanUserByID_Handler(ctx context.Context, input *BanUserByID_Req) (*schemas.
 }
 
 func DeleteCurrentUser_Handler(ctx context.Context, input *DeleteCurrentUser_Req) (*schemas.Delete_Res, error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	err := DeleteCurrentUser_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-	authorized_list := []string{
-		auth.CreatePermission(database.RoleEnum_Normal, auth.OPEnum_Write),
-	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_authorized := auth.CheckPermissions(authorized_list, user_permissions, auth.OPEnum_Write)
-	if is_authorized == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_claim := claims["user"].(map[string]interface{})
-	user_id := user_claim["id"].(string)
-
-	_, err = gorm.G[database.User](database.Conn).
-		Where("id = ?", user_id).
-		Delete(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in DELETE /users/me.")
-		return nil, huma.Error400BadRequest("Bad Request deleting current User")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("User is referenced in other tables")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	res := &schemas.Delete_Res{
@@ -443,29 +274,24 @@ func DeleteCurrentUser_Handler(ctx context.Context, input *DeleteCurrentUser_Req
 }
 
 func DeleteUserByID_Handler(ctx context.Context, input *DeleteUserByID_Req) (*schemas.Delete_Res, error) {
-
-	claims, err := auth.VerifyJWT(input.Auth)
+	err := DeleteUserByID_Service(ctx, input)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	user_permissions, err := utils.InterfaceToStringSlice(claims["permissions"])
-	if err != nil {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	is_adminstrator := auth.CheckAdminstration(user_permissions, auth.OPEnum_Read)
-	if is_adminstrator == false {
-		return nil, huma.Error401Unauthorized("Not Authorizaed")
-	}
-
-	_, err = gorm.G[database.User](database.Conn).
-		Where("id = ?", input.ID).
-		Delete(ctx)
-
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in DELETE /users/}id}.")
-		return nil, huma.Error400BadRequest("Bad Request deleting User by ID")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusUnauthorized:
+				return nil, huma.Error401Unauthorized("Not Authorized")
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("User is referenced in other tables")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	res := &schemas.Delete_Res{
