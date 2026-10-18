@@ -1,41 +1,33 @@
 package chosen_verses
 
 import (
-	"adeeb_huma/cache"
-	"adeeb_huma/database"
+	"adeeb_huma/internal/errs"
 	"adeeb_huma/internal/logger"
 	"adeeb_huma/schemas"
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) (*schemas.GetAll_Res[schemas.ChosenVerse_Descriptive], error) {
-
-	var results []ChosenVerseWithTotalCount
-	err := database.Conn.Table("chosen_verses").
-		Select("*, COUNT(*) OVER() as total_count").
-		Limit(input.Limit).
-		Offset(input.Offset).
-		Find(&results).Error
-
+	result, err := GetAll_Service(input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /chosen_verses.")
-		return nil, huma.Error404NotFound("Unknown error while getting chosen_verses")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /chosen_verses")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-
-	chosen_verses, total_count := DistillDBModelsWithCount(results)
 	res := &schemas.GetAll_Res[schemas.ChosenVerse_Descriptive]{
-		Body: schemas.GetAll_Res_Body[schemas.ChosenVerse_Descriptive]{
-			Data:       chosen_verses,
-			Limit:      input.Limit,
-			Offset:     input.Offset,
-			TotalCount: total_count,
-		},
+		Body:   *result,
 		Status: http.StatusOK,
 	}
 
@@ -43,69 +35,26 @@ func GetAllChosenVerses_Handler(ctx context.Context, input *schemas.GetAll_Req) 
 }
 
 func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req) (*GetOneChosenVerse_Res, error) {
-	var chosen_verse_res GetOneChosenVerse_Res_Body
-
-	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
-	chosen_verse_res, err := cache.GetJSON[GetOneChosenVerse_Res_Body](ctx, cache_key, GetOneChosenVerse_Res_Body{})
-	if err == nil {
-		return &GetOneChosenVerse_Res{chosen_verse_res, http.StatusOK}, nil
-	}
-
-	chosen_verse_model, err := gorm.G[database.ChosenVerse](
-		database.Conn,
-		clause.Select{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "verses"},
-				{Name: "is_couplet"},
-				{Name: "tags"},
-				{Name: "reviewed"},
-
-				{Name: "adeeb_id"},
-				{Name: "poem_id"},
-			},
-		}).
-		Preload("Adeeb", func(db gorm.PreloadBuilder) error {
-			db.Select("id", "name")
-			return nil
-		}).
-		Preload("Poem", func(db gorm.PreloadBuilder) error {
-			db.Select("id", "intro")
-			return nil
-		}).
-		Where("id = ?", input.ID).
-		First(ctx)
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, huma.Error404NotFound("ChosenVerse's not found")
-	}
+	result, err := GetOne_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in GET /chosen_verses/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request getting ChosenVerse")
-	}
-
-	chosen_verse_res.ID = chosen_verse_model.ID
-	chosen_verse_res.Verses = chosen_verse_model.Verses
-	chosen_verse_res.IsCouplet = chosen_verse_model.IsCouplet
-	chosen_verse_res.Tags = chosen_verse_model.Tags
-	chosen_verse_res.Reviewed = chosen_verse_model.Reviewed
-
-	chosen_verse_res.AdeebID = chosen_verse_model.AdeebID
-	chosen_verse_res.Adeeb.ID = chosen_verse_model.Adeeb.ID
-	chosen_verse_res.Adeeb.Name = chosen_verse_model.Adeeb.Name
-
-	chosen_verse_res.PoemID = chosen_verse_model.PoemID
-	chosen_verse_res.Poem.ID = chosen_verse_model.Poem.ID
-	chosen_verse_res.Poem.Intro = chosen_verse_model.Poem.Intro
-
-	// Adding the result to the cache service
-	err = cache.SetJSON(ctx, cache_key, chosen_verse_res)
-	if err != nil {
-		logger.Error().Err(err).Msg("Couldn't Cache.SetJSON() in GET /chosen_verses/{id}")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("ChosenVerse is not found")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in GET /chosen_verses/{id}")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	res := &GetOneChosenVerse_Res{
-		Body:   chosen_verse_res,
+		Body:   *result,
 		Status: http.StatusOK,
 	}
 
@@ -113,138 +62,69 @@ func GetOneChosenVerse_Handler(ctx context.Context, input *GetOneChosenVerse_Req
 }
 
 func CreateOneChosenVerse_Handler(ctx context.Context, input *CreateOneChosenVerse_Req) (*CreateOneChosenVerse_Res, error) {
-	data := ReqSchema_To_DBModel(input.Body)
-
-	err := gorm.G[database.ChosenVerse](
-		database.Conn,
-		clause.Returning{
-			Columns: []clause.Column{
-				{Name: "id"},
-				{Name: "verses"},
-				{Name: "is_couplet"},
-				{Name: "tags"},
-				{Name: "reviewed"},
-
-				{Name: "adeeb_id"},
-				{Name: "poem_id"},
-			},
-		},
-	).Create(ctx, &data)
-
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, huma.Error409Conflict("ChosenVerse already exists")
-	}
-	if errors.Is(err, gorm.ErrForeignKeyViolated) {
-		return nil, huma.Error400BadRequest("Foreign Key error")
-	}
+	result, err := CreateOne_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in POST /chosen_verses.")
-		return nil, huma.Error400BadRequest("Bad Request creating ChosenVerse.")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict(api_error.Message)
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in POST /chosen_verses")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
-
-	chosen_verse := DBModel_To_ResSchema(data)
-	return &CreateOneChosenVerse_Res{Body: chosen_verse, Status: http.StatusCreated}, nil
+	return &CreateOneChosenVerse_Res{Body: *result, Status: http.StatusCreated}, nil
 }
 
 func CreateManyChosenVerses_Handler(ctx context.Context, input *CreateManyChosenVerses_Req) (*CreateManyChosenVerses_Res, error) {
-
-	var CreatedItems []schemas.ChosenVerse_Descriptive
-	var InvalidItems []schemas.CreateMany_Res_Body_InvalidItem
-
-	new_data := ReqSchemas_To_DBModels(input.Body)
-	for i, item := range new_data {
-		err := gorm.G[database.ChosenVerse](
-			database.Conn,
-			clause.Returning{
-				Columns: []clause.Column{
-					{Name: "id"},
-					{Name: "verses"},
-					{Name: "is_couplet"},
-					{Name: "tags"},
-					{Name: "reviewed"},
-
-					{Name: "adeeb_id"},
-					{Name: "poem_id"},
-				},
-			},
-		).Create(ctx, &item)
-
-		if err != nil {
-			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Already exists"})
-			} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
-				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Foreign Key error"})
-			} else {
-				logger.Error().Err(err).Msg("Unknown errror in POST /chosen_verses/many.")
-				InvalidItems = append(InvalidItems, schemas.CreateMany_Res_Body_InvalidItem{ItemIndex: i, Message: "Bad Request, try again later"})
+	result, err := CreateMany_Service(ctx, input)
+	if err != nil {
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
 			}
-			continue
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in POST /chosen_verses/many")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
-
-		new_chosen_verse := DBModel_To_ResSchema(item)
-		CreatedItems = append(CreatedItems, new_chosen_verse)
-
 	}
 
 	return &CreateManyChosenVerses_Res{
-		Body: schemas.CreateMany_Res_Body[schemas.ChosenVerse_Descriptive]{
-			CreatedItems: CreatedItems,
-			SuccessCount: len(CreatedItems),
-			InvalidItems: InvalidItems,
-		},
-		Status: http.StatusCreated}, nil
+		Body:   *result,
+		Status: http.StatusCreated,
+	}, nil
 
 }
 
 func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req) (*schemas.Update_Res, error) {
-
-	chosen_verse_model, err := gorm.G[database.ChosenVerse](database.Conn).
-		Where("id = ?", input.ID).
-		First(ctx)
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, huma.Error404NotFound("ChosenVerse's not found")
-	}
-	if errors.Is(err, gorm.ErrForeignKeyViolated) {
-		return nil, huma.Error400BadRequest("Foreign Key error")
-	}
+	err := UpdateOne_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /chosen_verses/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request update ChosenVerse")
-	}
-
-	if input.Body.Verses != nil {
-		chosen_verse_model.Verses = *input.Body.Verses
-	}
-	if input.Body.IsCouplet != nil {
-		chosen_verse_model.IsCouplet = *input.Body.IsCouplet
-	}
-	if input.Body.Tags != nil {
-		chosen_verse_model.Tags = *input.Body.Tags
-	}
-	if input.Body.Reviewed != nil {
-		chosen_verse_model.Reviewed = *input.Body.Reviewed
-	}
-	if input.Body.AdeebID != nil {
-		chosen_verse_model.AdeebID = *input.Body.AdeebID
-	}
-	if input.Body.PoemID != nil {
-		chosen_verse_model.PoemID = *input.Body.PoemID
-	}
-
-	err = database.Conn.Save(&chosen_verse_model).Error
-	if errors.Is(err, gorm.ErrForeignKeyViolated) {
-		return nil, huma.Error400BadRequest("foreign key error")
-	}
-	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in PUT /chosen_verses/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request updating chosen_verse")
-	}
-
-	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
-	err = cache.DelKey(ctx, cache_key)
-	if err != nil {
-		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in PUT /chosen_verses/{id}")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusNotFound:
+				return nil, huma.Error404NotFound("ChosenVerse is not found")
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict(api_error.Message)
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in PUT /chosen_verses/{id}")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	res := &schemas.Update_Res{
@@ -255,20 +135,22 @@ func UpdateChosenVerse_Handler(ctx context.Context, input *UpdateChosenVerse_Req
 }
 
 func DeleteChosenVerseHandler(ctx context.Context, input *DeleteChosenVerse_Req) (*schemas.Delete_Res, error) {
-
-	_, err := gorm.G[database.ChosenVerse](database.Conn).
-		Where("id = ?", input.ID).
-		Delete(ctx)
-
+	err := DeleteOne_Service(ctx, input)
 	if err != nil {
-		logger.Error().Err(err).Msg("Unknown errror in DELETE /chosen_verses/{id}.")
-		return nil, huma.Error400BadRequest("Bad Request Deleting ChosenVerse")
-	}
-
-	cache_key := cache.FormatKeyByID("chosen_verses", input.ID)
-	err = cache.DelKey(ctx, cache_key)
-	if err != nil {
-		logger.Error().Err(err).Msg("Couldn't Cache.DelKey() in DELETE /chosen_verses/{id}")
+		if api_error, ok := err.(*errs.APIError); ok {
+			switch api_error.Status {
+			case http.StatusConflict:
+				return nil, huma.Error409Conflict("ChosenVerse is referenced in other tables")
+			case http.StatusBadRequest:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			default:
+				return nil, huma.Error400BadRequest("Bad request, try again later")
+			}
+		} else {
+			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
+			logger.Error().Err(api_error).Msg("Error in DELETE /chosen_verses/{id}")
+			return nil, huma.Error400BadRequest("Bad request, try again later")
+		}
 	}
 
 	res := &schemas.Delete_Res{
