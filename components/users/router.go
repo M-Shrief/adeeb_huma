@@ -24,7 +24,7 @@ func GetAllUsers_Handler(ctx context.Context, input *GetAllUsers_Req) (*schemas.
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in GET /users")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -53,7 +53,7 @@ func GetCurrentUser_Handler(ctx context.Context, input *GetCurrentUser_Req) (*Ge
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in GET /users/me")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -81,7 +81,7 @@ func GetUserByID_Handler(ctx context.Context, input *GetUserByID_Req) (*GetOneUs
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in GET /users/{id}")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -110,7 +110,7 @@ func Signup_Handler(ctx context.Context, input *Signup_Req) (*UserAuthorized_Res
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in POST /users/signup")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -143,7 +143,7 @@ func Login_Handler(ctx context.Context, input *Login_Req) (*UserAuthorized_Res, 
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in POST /users/login")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -175,7 +175,7 @@ func UpdateCurrentUser_Handler(ctx context.Context, input *UpdateCurrentUser_Req
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in PUT /users/me")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -208,7 +208,7 @@ func UpdateUserByID_Handler(ctx context.Context, input *UpdateUserByID_Req) (*sc
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in PUT /users/{id}")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -234,7 +234,7 @@ func BanUserByID_Handler(ctx context.Context, input *BanUserByID_Req) (*schemas.
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in PUT /users/{id}/ban")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -261,7 +261,7 @@ func DeleteCurrentUser_Handler(ctx context.Context, input *DeleteCurrentUser_Req
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in DELETE /users/me")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
@@ -289,7 +289,7 @@ func DeleteUserByID_Handler(ctx context.Context, input *DeleteUserByID_Req) (*sc
 			}
 		} else {
 			api_error := &errs.APIError{Status: http.StatusBadRequest, CausedIn: "router", Err: err}
-			logger.Error().Err(api_error).Msg("Error in GET /adeebs")
+			logger.Error().Err(api_error).Msg("Error in DELETE /users/{id}")
 			return nil, huma.Error400BadRequest("Bad request, try again later")
 		}
 	}
