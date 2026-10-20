@@ -53,7 +53,6 @@ type UpdateCurrentUser_Req struct {
 	Body struct {
 		schemas.User_UsernameField_Optional
 		schemas.User_PasswordField_Optional
-		schemas.User_RolesField_Optional
 	}
 	schemas.AuthHeader
 }
