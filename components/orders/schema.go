@@ -43,7 +43,8 @@ type CreateOneOrder_Res struct {
 	Status int
 }
 
-type CreateManyOrder_Req struct {
+type CreateManyOrders_Req struct {
+	schemas.AuthHeader
 	Body []CreateOneOrder_Req_Body
 }
 
@@ -57,14 +58,25 @@ type OneOrder_Res struct {
 	Prints []PrintItem_Res `json:"prints,omitempty" required:"false"`
 }
 
-type AddPrint_Req struct {
+type AddOnePrint_Req struct {
 	Body PrintItem_Req
 	schemas.IDPath
 	schemas.AuthHeader
 }
 
-type AddPrint_Res struct {
+type AddOnePrint_Res struct {
 	Body   PrintItem_Res
+	Status int
+}
+
+type AddManyPrints_Req struct {
+	Body []PrintItem_Req
+	schemas.IDPath
+	schemas.AuthHeader
+}
+
+type AddManyPrints_Res struct {
+	Body   schemas.CreateMany_Res_Body[PrintItem_Res]
 	Status int
 }
 
