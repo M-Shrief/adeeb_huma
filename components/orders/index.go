@@ -83,7 +83,20 @@ func RegisterAPI(api huma.API) {
 			Tags:          []string{"Orders"},
 			DefaultStatus: http.StatusCreated,
 		},
-		AddPrint_Handler,
+		AddOnePrint_Handler,
+	)
+
+	huma.Register(
+		api,
+		huma.Operation{
+			Method:        http.MethodPost,
+			Path:          "/api/v1/orders/{id}/prints/many",
+			Summary:       "Add Prints",
+			Description:   "Add One Print",
+			Tags:          []string{"Orders"},
+			DefaultStatus: http.StatusCreated,
+		},
+		AddManyPrints_Handler,
 	)
 
 	huma.Register(
