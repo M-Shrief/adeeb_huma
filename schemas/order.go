@@ -37,6 +37,7 @@ type Order_Descriptive struct {
 type Order_Minimal struct {
 	IDField
 	Order_StatusField
+	Order_IsUpdateableField
 	Order_DeliveryScheduleField_Optional
 	// Relations
 	UserIDField_Optional
